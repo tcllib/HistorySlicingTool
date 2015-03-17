@@ -1,8 +1,8 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
-
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -28,16 +28,16 @@ import org.eclipse.jgit.diff.HistogramDiff;
 import org.eclipse.jgit.diff.MyersDiff;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
-
 import java.io.ByteArrayOutputStream;
-
 import org.eclipse.jgit.diff.DiffFormatter;
+
 
 //this class mainly demonstrate how does API work
 public class LineHistory {
 	
 	private static Git myGit;
 	private static ArrayList<ObjectId> output;
+	private static Hashtable<String, Integer> matchTable;
 	
 	//exception need to be catched later first 3 belongs to repo.resolve and GitAPIException belongs to List<DiffEntry> diffs
 	public static void main(String[] args) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException, GitAPIException {
@@ -95,40 +95,8 @@ public class LineHistory {
 			RawText oldFile = getFile(localRepo, filePath, oldId);
 			System.out.println("---------");
 			
-			
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-		    
-		    System.out.println("ALL DIFF OUTPUT " + count);
-		    System.out.println("-----------");
-		    
-		    if (oldFile != null) {
-		    	try
-			    {
-			      EditList diffList = new EditList();
-			      diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
-			      new DiffFormatter(out).format(diffList, oldFile, newFile);
-			      
-			      System.out.println("region: ");
-				  for (Edit edit : diffList) {
-					  System.out.println("beginA");
-					  System.out.println(edit.getBeginA());
-					  System.out.println("endA");
-					  System.out.println(edit.getEndA());
-					  System.out.println("beginB");
-					  System.out.println(edit.getBeginB());
-					  System.out.println("endB");
-					  System.out.println(edit.getEndB());
-				  }
-				    
-			    } catch (IOException e)
-			    {
-			      e.printStackTrace();
-			    }
-			    System.out.println(out.toString());
-			    System.out.println("-----------");
-			    out.reset();	
-		    }
-		    
+			lineMatch(newFile,oldFile,count);
+	
 			
 			//move the the previous revision
 			newId = oldId;
@@ -183,4 +151,94 @@ public class LineHistory {
 		return file;
 		
 	}
+
+	private static void lineMatch(RawText newFile, RawText oldFile , int count){
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+	    
+	    System.out.println("ALL DIFF OUTPUT " + count);
+	    System.out.println("-----------");
+	    
+	   
+	   	int oldFileLineNumber = oldFile.size();
+	   	int newFileLineNumber = newFile.size();
+	   	int minLineN = oldFileLineNumber < newFileLineNumber ? oldFileLineNumber:newFileLineNumber;
+	   	//Find which file has the maximum line number for the follwoing loop
+	   	System.out.println(oldFileLineNumber+","+newFileLineNumber+","+ minLineN);
+	    ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
+	    for (int Line = 1;  Line <= minLineN;Line++ ){
+	    	LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Line,Line);
+	    	matcher.add(lp);
+	    	System.out.println(lp.getL() + "," + lp.getR() ); 
+	    } 
+	    //initial the array list with paired numbers/ check array list elements
+	    
+	    //System.out.println(matcher.get(maxLineN-1).getL());
+	    
+	    
+	    if (oldFile != null) {
+	    	int lineA[] = new int[200],lineB[] = new int[200];
+	    	int lenA[] = new int[200],lenB[] = new int[200];
+	    	try
+		    {    	
+	    	  int i = 0;
+		      EditList diffList = new EditList();
+		      diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
+		      new DiffFormatter(out).format(diffList, oldFile, newFile);
+			  for (Edit edit : diffList) {
+				  lineA[i] = edit.getBeginA(); 
+				  lenA[i] = edit.getLengthA();
+				  lineB[i] = edit.getBeginB();
+				  lenB[i] = edit.getLengthB();
+				  System.out.println("BeginA: "+lineA[i]+" lengthA: "+lenA[i]+" BeginB: "+lineB[i]+" lengthB: "+lenB[i]);
+
+				  i++;
+				  
+			  }
+			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
+			  int Left,Right,index = 0;
+			  for(int j = 0;j<i;j++){
+				  /*if(lenA[j] == 0 && lenB[j] > 0) {
+					  
+				  }*/
+				  if(lenA[j] > 0 && lenB[j] == 0){
+					  Right = lineB[j]+1;
+					  Left = lineA[j]+lenA[j]+1;
+					  index = lineB[j];
+					  for (int n=0; n<(lenB[j+1]-lenB[j]); n++){
+						  matcher.get(index).setL(Left);
+						  matcher.get(index).setR(Right);
+						  Left++;
+						  Right++;
+						  index++;
+					  }
+				  }
+				  if(lenA[j] > 0 && lenB[j] > 0){
+					  Right = lineB[j]+1;
+					  Left = 0;
+					  index = lineB[j];
+					  for (int n=0; n< lenB[j];n++){
+						  matcher.get(index).setL(Left);
+						  matcher.get(index).setR(Right);
+						  Right++;
+						  index++;
+					  }
+				  }
+			  }
+			    for (int Line = 0;  Line < minLineN;Line++ ){
+			    	System.out.println(matcher.get(Line).getL() + "," + matcher.get(Line).getR()); 
+			    } 
+			  
+			    
+		    } catch (IOException e)
+		    {
+		      e.printStackTrace();
+		    }
+		    System.out.println(out.toString());
+		    System.out.println("-----------");
+		    out.reset();	
+	    }
+	    
+		
+	}
+
 }
