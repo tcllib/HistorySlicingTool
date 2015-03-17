@@ -21,6 +21,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
 import org.eclipse.jgit.diff.HistogramDiff;
 import org.eclipse.jgit.diff.RawText;
@@ -161,6 +162,19 @@ public class LineHistory {
 			      EditList diffList = new EditList();
 			      diffList.addAll(new HistogramDiff().diff(RawTextComparator.DEFAULT, oldFile, newFile));
 			      new DiffFormatter(out).format(diffList, oldFile, newFile);
+			      
+			      System.out.println("region: ");
+				  for (Edit edit : diffList) {
+					  System.out.println("beginA");
+					  System.out.println(edit.getBeginA());
+					  System.out.println("endA");
+					  System.out.println(edit.getEndA());
+					  System.out.println("beginB");
+					  System.out.println(edit.getBeginB());
+					  System.out.println("endB");
+					  System.out.println(edit.getEndB());
+				  }
+				    
 			    } catch (IOException e)
 			    {
 			      e.printStackTrace();
