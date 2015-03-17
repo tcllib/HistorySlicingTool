@@ -9,6 +9,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
@@ -24,6 +25,7 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
 import org.eclipse.jgit.diff.HistogramDiff;
+import org.eclipse.jgit.diff.MyersDiff;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
 
@@ -70,11 +72,6 @@ public class LineHistory {
 		
 		//initializing the current revision
 		ObjectId newId = localRepo.resolve(Constants.HEAD);
-		//Commit head = repo.mapCommit(Constants.HEAD);
-		
-		//files to be compared
-		RawText newFile = null;
-		RawText oldFile = null;
 		
 		//boolean value used to decide if there exists a previous revision, if not end the loop
 		boolean isEnd = false;
@@ -85,71 +82,19 @@ public class LineHistory {
 		do {
 			ObjectId oldId = localRepo.resolve(newId.name() + "^");
 			
-			// try to get the new file
-			try {
-		  		// Get the commit object for that revision
-		  	    RevWalk walk = new RevWalk(reader);
-		  	    RevCommit commit = walk.parseCommit(newId);
-
-		  	        // Get the revision's file tree
-		  	    RevTree tree = commit.getTree();
-		  	        // .. and narrow it down to the single file's path
-		  	    TreeWalk treewalk = TreeWalk.forPath(reader, filePath, tree);
-
-		  	    if (treewalk != null) {
-		  	    	// use the blob id to read the file's data
-		  	        byte[] data = reader.open(treewalk.getObjectId(0)).getBytes();
-		  	        //return new String(data, "utf-8");
-		  	        newFile = new RawText(data);
-		  	        //System.out.println(new String(data, "utf-8"));
-		  	        
-		  	        //Initializing output list, set the output size to the line number of input file
-		  	        //output = new ArrayList<ObjectId> (file.size());
-		  	        
-		  	        //newText = new RawText(data);
-		  	    } else {
-		  	            System.out.println("File Not Found");
-		  	    }
-		  	} 
-		  	//catch ()
-		  	finally {
-		  		reader.release();
-		  	}
-			
-			//try to get the old file
-			try {
-				// Get the commit object for that revision
-		  	    RevWalk walk = new RevWalk(reader);
-		  	    if(oldId != null) {
-		  	    	RevCommit commit = walk.parseCommit(oldId);
-
-		  	        // Get the revision's file tree
-		  	    	RevTree tree = commit.getTree();
-		  	        // .. and narrow it down to the single file's path
-		  	    	TreeWalk treewalk = TreeWalk.forPath(reader, filePath, tree);
-
-		  	    	if (treewalk != null) {
-		  	    		// use the blob id to read the file's data
-		  	    		byte[] data = reader.open(treewalk.getObjectId(0)).getBytes();
-		  	    		//return new String(data, "utf-8");
-		  	    		oldFile = new RawText(data);
-		  	    		//System.out.println(new String(data, "utf-8"));
-		  	    		//newText = new RawText(data);
-		  	    	} else {
-		  	            System.out.println("loop ended");
-		  	            isEnd = true;
-		  	    	}
-		  	    } else {
-		  	    	break;
-		  	    }
-		  	    
-				
+			//if there is no previous revision, end the loop
+			if (oldId == null) {
+				break;
 			}
 			
-			//run diff for two files
-			finally {
-				reader.release();
-			}
+			// try to get the new and old file
+			System.out.println("this is new file: ");
+			RawText newFile = getFile(localRepo, filePath, newId);
+			System.out.println("-----------");
+			System.out.println("this is old file: ");
+			RawText oldFile = getFile(localRepo, filePath, oldId);
+			System.out.println("---------");
+			
 			
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 		    
@@ -160,7 +105,7 @@ public class LineHistory {
 		    	try
 			    {
 			      EditList diffList = new EditList();
-			      diffList.addAll(new HistogramDiff().diff(RawTextComparator.DEFAULT, oldFile, newFile));
+			      diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
 			      new DiffFormatter(out).format(diffList, oldFile, newFile);
 			      
 			      System.out.println("region: ");
@@ -200,6 +145,42 @@ public class LineHistory {
 		
 	}
 	
+	//this method try to find a file in the repo for a given commit
+	private static RawText getFile(Repository localRepo, String filePath, ObjectId commitId) throws MissingObjectException, IncorrectObjectTypeException, IOException {
+		RawText file = null;
+		ObjectReader reader = localRepo.newObjectReader();
+		
+		try {
+	  		// Get the commit object for that revision
+	  	    RevWalk walk = new RevWalk(reader);
+	  	    RevCommit commit = walk.parseCommit(commitId);
 
+	  	        // Get the revision's file tree
+	  	    RevTree tree = commit.getTree();
+	  	        // .. and narrow it down to the single file's path
+	  	    TreeWalk treewalk = TreeWalk.forPath(reader, filePath, tree);
 
+	  	    if (treewalk != null) {
+	  	    	// use the blob id to read the file's data
+	  	        byte[] data = reader.open(treewalk.getObjectId(0)).getBytes();
+	  	        //return new String(data, "utf-8");
+	  	        file = new RawText(data);
+	  	        System.out.println(new String(data, "utf-8"));
+	  	        
+	  	        //Initializing output list, set the output size to the line number of input file
+	  	        //output = new ArrayList<ObjectId> (file.size());
+	  	        
+	  	        //newText = new RawText(data);
+	  	    } else {
+	  	            System.out.println("File Not Found");
+	  	    }
+	  	} 
+	  	//catch ()
+	  	finally {
+	  		reader.release();
+	  	}
+		
+		return file;
+		
+	}
 }
