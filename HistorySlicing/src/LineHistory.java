@@ -71,8 +71,6 @@ public class LineHistory {
 	
 	private static void diff(Repository localRepo, String filePath) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException {
 		
-		ObjectReader reader = localRepo.newObjectReader();
-		
 		//initializing the current revision
 		ObjectId newId = localRepo.resolve(Constants.HEAD);
 		
@@ -101,7 +99,7 @@ public class LineHistory {
 			lineMatch(newFile,oldFile,count);
 	
 			
-			//move the the previous revision
+			//move to the previous revision
 			newId = oldId;
 			
 			//increment count
@@ -196,10 +194,10 @@ public class LineHistory {
 				  i++;			  
 			  }
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
-			 List oldList = new ArrayList();
-			 List newList = new ArrayList();
-			 List oldOnlyList = new ArrayList();
-			 List newOnlyList = new ArrayList();
+			 ArrayList<Integer> oldList = new ArrayList<Integer> ();
+			 ArrayList<Integer> newList = new ArrayList<Integer> ();
+			 List<List<Integer>> oldOnlyLists = new ArrayList<List<Integer>> ();
+			 List<List<Integer>> newOnlyLists = new ArrayList<List<Integer>> ();
 			 
 			 for(int Left = 1; Left <= oldFileLineNumber; Left++ ){
 				 oldList.add(Left);
@@ -208,19 +206,26 @@ public class LineHistory {
 				 newList.add(Right);
 			 }			 
 			 for (int j = 0; j< i ; j++){
+				 List<Integer> tempList = new ArrayList<Integer> ();
+				 
 				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
-					 oldOnlyList.add(Left);
+					 tempList.add(Left);
 				 }
-				 oldOnlyList.add("|");
+				 
+				 oldOnlyLists.add(tempList);
+				 oldList.removeAll(tempList);
 			 }		 
+			 
 			 for (int j = 0; j< i ; j++){
+				 List<Integer> tempList = new ArrayList<Integer> ();
+
 				 for (int Right = beginB[j]+1; Right<=endB[j]; Right++){
-					 newOnlyList.add(Right);
+					 tempList.add(Right);
 				 }
-				 newOnlyList.add("|");
+				 
+				 newOnlyLists.add(tempList);
+				 newList.removeAll(tempList);
 			 }		 
-			 oldList.removeAll(oldOnlyList);
-			 newList.removeAll(newOnlyList);
 
 			 int Left,Right;
 			 for(int index = 0; index < oldList.size() ; index++){
