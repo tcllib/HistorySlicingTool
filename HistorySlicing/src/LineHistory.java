@@ -155,7 +155,8 @@ public class LineHistory {
 		
 	}
 
-	private static void lineMatch(RawText newFile, RawText oldFile , int count){
+	private static void lineMatch(RawText newFile, RawText oldFile , int count) {
+			
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 	    
 	    System.out.println("ALL DIFF OUTPUT " + count);
@@ -210,11 +211,13 @@ public class LineHistory {
 				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
 					 oldOnlyList.add(Left);
 				 }
+				 oldOnlyList.add("|");
 			 }		 
 			 for (int j = 0; j< i ; j++){
 				 for (int Right = beginB[j]+1; Right<=endB[j]; Right++){
 					 newOnlyList.add(Right);
 				 }
+				 newOnlyList.add("|");
 			 }		 
 			 oldList.removeAll(oldOnlyList);
 			 newList.removeAll(newOnlyList);
