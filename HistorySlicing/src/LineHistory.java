@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -28,7 +29,9 @@ import org.eclipse.jgit.diff.HistogramDiff;
 import org.eclipse.jgit.diff.MyersDiff;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
+
 import java.io.ByteArrayOutputStream;
+
 import org.eclipse.jgit.diff.DiffFormatter;
 
 
@@ -159,25 +162,24 @@ public class LineHistory {
 	    System.out.println("-----------");
 	    
 	   
-	   	int oldFileLineNumber = oldFile.size();
 	   	int newFileLineNumber = newFile.size();
-	   	int minLineN = oldFileLineNumber < newFileLineNumber ? oldFileLineNumber:newFileLineNumber;
-	   	//Find which file has the maximum line number for the follwoing loop
-	   	System.out.println(oldFileLineNumber+","+newFileLineNumber+","+ minLineN);
+	   	int oldFileLineNumber = oldFile.size();
+	   	//Find which file has the maximum line number for the following loop
+	   	System.out.println("New Line Numbers: "+newFileLineNumber);
+	   	System.out.println("Old Line Numbers: "+oldFileLineNumber);
 	    ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
-	    for (int Line = 1;  Line <= minLineN;Line++ ){
+	    /**for (int Line = 1;  Line <= newFileLineNumber;Line++ ){
 	    	LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Line,Line);
 	    	matcher.add(lp);
-	    	System.out.println(lp.getL() + "," + lp.getR() ); 
-	    } 
+	    	} */
 	    //initial the array list with paired numbers/ check array list elements
 	    
 	    //System.out.println(matcher.get(maxLineN-1).getL());
 	    
 	    
 	    if (oldFile != null) {
-	    	int lineA[] = new int[200],lineB[] = new int[200];
-	    	int lenA[] = new int[200],lenB[] = new int[200];
+	    	int beginA[] = new int[200],beginB[] = new int[200];
+	    	int endA[] = new int[200],endB[] = new int[200];
 	    	try
 		    {    	
 	    	  int i = 0;
@@ -185,48 +187,52 @@ public class LineHistory {
 		      diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
 		      new DiffFormatter(out).format(diffList, oldFile, newFile);
 			  for (Edit edit : diffList) {
-				  lineA[i] = edit.getBeginA(); 
-				  lenA[i] = edit.getLengthA();
-				  lineB[i] = edit.getBeginB();
-				  lenB[i] = edit.getLengthB();
-				  System.out.println("BeginA: "+lineA[i]+" lengthA: "+lenA[i]+" BeginB: "+lineB[i]+" lengthB: "+lenB[i]);
-
-				  i++;
-				  
+				  beginA[i] = edit.getBeginA(); 
+				  endA[i] = edit.getEndA();
+				  beginB[i] = edit.getBeginB();
+				  endB[i] = edit.getEndB();
+				  System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);
+				  i++;			  
 			  }
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
-			  int Left,Right,index = 0;
-			  for(int j = 0;j<i;j++){
-				  /*if(lenA[j] == 0 && lenB[j] > 0) {
-					  
-				  }*/
-				  if(lenA[j] > 0 && lenB[j] == 0){
-					  Right = lineB[j]+1;
-					  Left = lineA[j]+lenA[j]+1;
-					  index = lineB[j];
-					  for (int n=0; n<(lenB[j+1]-lenB[j]); n++){
-						  matcher.get(index).setL(Left);
-						  matcher.get(index).setR(Right);
-						  Left++;
-						  Right++;
-						  index++;
-					  }
-				  }
-				  if(lenA[j] > 0 && lenB[j] > 0){
-					  Right = lineB[j]+1;
-					  Left = 0;
-					  index = lineB[j];
-					  for (int n=0; n< lenB[j];n++){
-						  matcher.get(index).setL(Left);
-						  matcher.get(index).setR(Right);
-						  Right++;
-						  index++;
-					  }
-				  }
-			  }
-			    for (int Line = 0;  Line < minLineN;Line++ ){
-			    	System.out.println(matcher.get(Line).getL() + "," + matcher.get(Line).getR()); 
-			    } 
+			 List oldList = new ArrayList();
+			 List newList = new ArrayList();
+			 List oldOnlyList = new ArrayList();
+			 List newOnlyList = new ArrayList();
+			 
+			 for(int Left = 1; Left <= oldFileLineNumber; Left++ ){
+				 oldList.add(Left);
+			 }		 
+			 for(int Right = 1; Right <= newFileLineNumber; Right++ ){
+				 newList.add(Right);
+			 }			 
+			 for (int j = 0; j< i ; j++){
+				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
+					 oldOnlyList.add(Left);
+				 }
+			 }		 
+			 for (int j = 0; j< i ; j++){
+				 for (int Right = beginB[j]+1; Right<=endB[j]; Right++){
+					 newOnlyList.add(Right);
+				 }
+			 }		 
+			 oldList.removeAll(oldOnlyList);
+			 newList.removeAll(newOnlyList);
+
+			 int Left,Right;
+			 for(int index = 0; index < oldList.size() ; index++){
+				 Left = (int) oldList.toArray()[index];
+				 Right = (int) newList.toArray()[index];
+				 System.out.println(Left+","+Right);
+			     LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Left,Right);
+			     matcher.add(lp);
+				 
+			 }
+			 
+			 
+			    //for (int Line = 0;  Line < newFileLineNumber;Line++ ){
+			   // 	System.out.println(matcher.get(Line).getL() + "," + matcher.get(Line).getR()); 
+			    //} 
 			  
 			    
 		    } catch (IOException e)
@@ -242,3 +248,7 @@ public class LineHistory {
 	}
 
 }
+  /**
+		  
+**/
+
