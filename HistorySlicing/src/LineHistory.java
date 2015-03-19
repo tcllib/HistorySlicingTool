@@ -39,8 +39,16 @@ import org.eclipse.jgit.diff.DiffFormatter;
 public class LineHistory {
 	
 	private static Git myGit;
-	private static ArrayList<ObjectId> output;
-	private static Hashtable<String, Integer> matchTable;
+	//private static ArrayList<ObjectId> output;
+	
+	//this hash table is used to store the final results
+	private static Hashtable<Integer, List<String>> resultTable;
+	
+	//this list is used to store the list of the changed commit ID for each line
+	private static List<List<String>> resultLists;
+	
+	//How many lines does the target file contain
+	private static int size;
 	
 	//exception need to be catched later first 3 belongs to repo.resolve and GitAPIException belongs to List<DiffEntry> diffs
 	public static void main(String[] args) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException, GitAPIException {
@@ -65,8 +73,34 @@ public class LineHistory {
 		//Initializing the Repository object
 		Repository localRepo = myGit.getRepository();
 		
+		//Initializing the output table
+		InitOutput(localRepo, filePath);
+		
 		diff(localRepo, filePath);
+		
+		updateResultTable();
+		
+		printOutput();
 	    
+	}
+	
+	private static void InitOutput(Repository localRepo, String filePath) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException {
+		//initializing the current revision
+		ObjectId Id = localRepo.resolve(Constants.HEAD);
+		RawText targetFile = getFile(localRepo, filePath, Id);
+		
+		size = targetFile.size();
+		
+		resultTable = new Hashtable<Integer, List<String>> (size);
+		resultLists = new ArrayList<List<String>> (size);
+
+		List<String> initList = new ArrayList<String> ();
+		
+		//Initialize result table with line numbers and empty arrayLists
+		for (int i = 1; i <= size; i++) {
+			resultTable.put(i, initList);
+			resultLists.add(new ArrayList<String> ());
+		}
 	}
 	
 	private static void diff(Repository localRepo, String filePath) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException {
@@ -89,14 +123,16 @@ public class LineHistory {
 			}
 			
 			// try to get the new and old file
-			System.out.println("this is new file: ");
+			//System.out.println("this is new file: ");
 			RawText newFile = getFile(localRepo, filePath, newId);
-			System.out.println("-----------");
-			System.out.println("this is old file: ");
+			//System.out.println("-----------");
+			//System.out.println("this is old file: ");
 			RawText oldFile = getFile(localRepo, filePath, oldId);
-			System.out.println("---------");
+			//System.out.println("---------");
 			
-			lineMatch(newFile,oldFile,count);
+			//update the line mapping result and the reusltLists
+			lineMatch(newFile, oldFile, count, oldId);
+
 	
 			
 			//move to the previous revision
@@ -134,7 +170,7 @@ public class LineHistory {
 	  	        byte[] data = reader.open(treewalk.getObjectId(0)).getBytes();
 	  	        //return new String(data, "utf-8");
 	  	        file = new RawText(data);
-	  	        System.out.println(new String(data, "utf-8"));
+	  	        //System.out.println(new String(data, "utf-8"));
 	  	        
 	  	        //Initializing output list, set the output size to the line number of input file
 	  	        //output = new ArrayList<ObjectId> (file.size());
@@ -153,19 +189,19 @@ public class LineHistory {
 		
 	}
 
-	private static void lineMatch(RawText newFile, RawText oldFile , int count) {
-			
+	private static void lineMatch(RawText newFile, RawText oldFile , int count, ObjectId commitId) throws IOException {
+		List<Integer> changedLines = new ArrayList<Integer> ();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 	    
-	    System.out.println("ALL DIFF OUTPUT " + count);
-	    System.out.println("-----------");
+	    //System.out.println("ALL DIFF OUTPUT " + count);
+	    //System.out.println("-----------");
 	    
 	   
 	   	int newFileLineNumber = newFile.size();
 	   	int oldFileLineNumber = oldFile.size();
 	   	//Find which file has the maximum line number for the following loop
-	   	System.out.println("New Line Numbers: "+newFileLineNumber);
-	   	System.out.println("Old Line Numbers: "+oldFileLineNumber);
+	   	//System.out.println("New Line Numbers: "+newFileLineNumber);
+	   	//System.out.println("Old Line Numbers: "+oldFileLineNumber);
 	    ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
 	    /**for (int Line = 1;  Line <= newFileLineNumber;Line++ ){
 	    	LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Line,Line);
@@ -190,7 +226,7 @@ public class LineHistory {
 				  endA[i] = edit.getEndA();
 				  beginB[i] = edit.getBeginB();
 				  endB[i] = edit.getEndB();
-				  System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);
+				  //System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);
 				  i++;			  
 			  }
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
@@ -221,17 +257,18 @@ public class LineHistory {
 
 				 for (int Right = beginB[j]+1; Right<=endB[j]; Right++){
 					 tempList.add(Right);
+					 changedLines.add(Right);
 				 }
-				 
 				 newOnlyLists.add(tempList);
 				 newList.removeAll(tempList);
+				 
 			 }		 
 
 			 int Left,Right;
 			 for(int index = 0; index < oldList.size() ; index++){
 				 Left = (int) oldList.toArray()[index];
 				 Right = (int) newList.toArray()[index];
-				 System.out.println(Left+","+Right);
+				 //System.out.println(Left+","+Right);
 			     LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Left,Right);
 			     matcher.add(lp);
 				 
@@ -247,12 +284,39 @@ public class LineHistory {
 		    {
 		      e.printStackTrace();
 		    }
-		    System.out.println(out.toString());
-		    System.out.println("-----------");
+		    //System.out.println(out.toString());
+		    //System.out.println("-----------");
 		    out.reset();	
+	    }	    
+		//System.out.println("size of changedLines is " + changedLines.size());
+
+	    //update the resultLists
+	    for (int c = 0; c < changedLines.size(); c++) {
+	    	(resultLists.get(changedLines.get(c) - 1)).add(commitId.name());
 	    }
-	    
+	}
+	
+	private static void updateResultTable() {
+		for (int i = 1; i <= size; i++) {
+			List<String> tempList = resultLists.get(i - 1);
+			resultTable.put(i, tempList);
+		}
 		
+	}
+	
+	private static void printOutput() {
+		
+		for (int i = 1; i <= size; i++) {
+			List<String> tempList = resultTable.get(i);
+			int l = tempList.size();
+			String commitList = "";
+			
+			for (int j = 0; j < l; j++) {
+				commitList = commitList + " " + tempList.get(j);
+			}
+			
+			System.out.println("Line " + i + ": " + commitList);
+		}
 	}
 
 }
