@@ -202,7 +202,9 @@ public class LineHistory {
 	   	//Find which file has the maximum line number for the following loop
 	   	//System.out.println("New Line Numbers: "+newFileLineNumber);
 	   	//System.out.println("Old Line Numbers: "+oldFileLineNumber);
-	    ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
+	    ArrayList<LinePair<Integer,Integer>> unchangedMatcher = new ArrayList<LinePair<Integer,Integer>>();
+	    ArrayList<LinePair<Integer,Integer>> changedMatcher = new ArrayList<LinePair<Integer,Integer>>();
+	    
 	    /**for (int Line = 1;  Line <= newFileLineNumber;Line++ ){
 	    	LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Line,Line);
 	    	matcher.add(lp);
@@ -232,8 +234,8 @@ public class LineHistory {
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
 			 ArrayList<Integer> oldList = new ArrayList<Integer> ();
 			 ArrayList<Integer> newList = new ArrayList<Integer> ();
-			 List<Hashtable<Integer, String>> oldOnlyLists = new ArrayList<Hashtable<Integer, String>> ();
-			 List<Hashtable<Integer, String>> newOnlyLists = new ArrayList<Hashtable<Integer, String>> ();
+			 List<Hashtable<Integer, String>> oldOnlyTables = new ArrayList<Hashtable<Integer, String>> ();
+			 List<Hashtable<Integer, String>> newOnlyTables = new ArrayList<Hashtable<Integer, String>> ();
 			 
 			 for(int Left = 1; Left <= oldFileLineNumber; Left++ ){
 				 oldList.add(Left);
@@ -260,30 +262,22 @@ public class LineHistory {
 					 changedLines.add(Right);
 				 }
 				 
+				 newList.removeAll(tempListR);
+			 	 oldList.removeAll(tempListL);
+			 	 
 				 //check that if the hunk is a large modification
 				 if(isLargeModification(tempTableL.size(), oldFileLineNumber, tempTableR.size(), newFileLineNumber)) {
-					 oldOnlyLists.add(tempTableL);
-				 	 oldList.removeAll(tempListL);
-				 	 newOnlyLists.add(tempTableR);
-				 	 newList.removeAll(tempListR);
+					 oldOnlyTables.add(tempTableL);
+				 	 newOnlyTables.add(tempTableR);	 
 				 }
 			 }		 	 
 
 			 //line mapping for unchanged lines
-			 int Left,Right;
-			 for(int index = 0; index < oldList.size() ; index++){
-				 Left = (int) oldList.toArray()[index];
-				 Right = (int) newList.toArray()[index];
-				 //System.out.println(Left+","+Right);
-			     LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Left,Right);
-			     matcher.add(lp);
-			 }
-			 
+			 unchangedMatcher = lineMappingForUnchangedLines(oldList, newList);
+			 			 
 			 //line mapping for changed lines in hunks
-			 //write something here!!
-			 lineMappingFOrChangedLines(oldOnlyLists, newOnlyLists);
-			  
-			    
+			 changedMatcher = lineMappingForChangedLines(oldOnlyTables, newOnlyTables);
+			 
 		     } catch (IOException e) {
 		    	 e.printStackTrace();
 		     }
@@ -297,9 +291,32 @@ public class LineHistory {
 	    }
 	}
 	
-	private static void lineMappingFOrChangedLines(List<Hashtable<Integer, String>> oldOnlyLists, List<Hashtable<Integer, String>> newOnlyLists) {
+	private static ArrayList<LinePair<Integer,Integer>> lineMappingForUnchangedLines(ArrayList<Integer> oldList, ArrayList<Integer> newList) {
+		ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
 		
+		int Left,Right;
+		 for(int index = 0; index < oldList.size() ; index++){
+			 Left = (int) oldList.toArray()[index];
+			 Right = (int) newList.toArray()[index];
+			 //System.out.println(Left+","+Right);
+		     LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Left,Right);
+		     matcher.add(lp);
+		 }
 		
+		return matcher;
+	}
+	
+	private static ArrayList<LinePair<Integer,Integer>> lineMappingForChangedLines(List<Hashtable<Integer, String>> oldOnlyTables, List<Hashtable<Integer, String>> newOnlyTables) {
+		ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
+		
+		for(int i = 0; i < oldOnlyTables.size(); i++) {
+			Hashtable newTable = newOnlyTables.get(i);
+			Hashtable oldTable = oldOnlyTables.get(i);
+			
+			
+		}
+		
+		return matcher;
 	}
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
@@ -307,6 +324,18 @@ public class LineHistory {
 		
 		return isLargeModification;
 	}
+	
+	protected Double calculateNormalizedDistance(String s1, String s2) {
+        Double lDistance = 0.0;
+        int max = Math.max(s1.length(), s2.length());
+        if (max > 0) {
+                s1 = s1.toLowerCase();
+                s2 = s2.toLowerCase();
+                //int distance = Levenshtein.distance(s1, s2);
+                //lDistance = distance * 1.0 / max;
+        }
+        return lDistance;
+}
 	
 	private static void updateResultTable() {
 		for (int i = 1; i <= size; i++) {
