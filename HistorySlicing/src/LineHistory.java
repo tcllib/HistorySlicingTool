@@ -232,38 +232,44 @@ public class LineHistory {
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
 			 ArrayList<Integer> oldList = new ArrayList<Integer> ();
 			 ArrayList<Integer> newList = new ArrayList<Integer> ();
-			 List<List<Integer>> oldOnlyLists = new ArrayList<List<Integer>> ();
-			 List<List<Integer>> newOnlyLists = new ArrayList<List<Integer>> ();
+			 List<Hashtable<Integer, String>> oldOnlyLists = new ArrayList<Hashtable<Integer, String>> ();
+			 List<Hashtable<Integer, String>> newOnlyLists = new ArrayList<Hashtable<Integer, String>> ();
 			 
 			 for(int Left = 1; Left <= oldFileLineNumber; Left++ ){
 				 oldList.add(Left);
 			 }		 
+			 
 			 for(int Right = 1; Right <= newFileLineNumber; Right++ ){
 				 newList.add(Right);
-			 }			 
-			 for (int j = 0; j< i ; j++){
-				 List<Integer> tempList = new ArrayList<Integer> ();
-				 
-				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
-					 tempList.add(Left);
-				 }
-				 
-				 oldOnlyLists.add(tempList);
-				 oldList.removeAll(tempList);
-			 }		 
+			 }	
 			 
 			 for (int j = 0; j< i ; j++){
-				 List<Integer> tempList = new ArrayList<Integer> ();
+				 Hashtable<Integer, String> tempTableL = new Hashtable<Integer, String>();
+				 Hashtable<Integer, String> tempTableR = new Hashtable<Integer, String> ();
+				 List<Integer> tempListL = new ArrayList<Integer>();
+				 List<Integer> tempListR = new ArrayList<Integer>();
 
+				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
+					 tempTableL.put(Left, oldFile.getString(Left - 1));
+					 tempListL.add(Left);
+				 }
+				 
 				 for (int Right = beginB[j]+1; Right<=endB[j]; Right++){
-					 tempList.add(Right);
+					 tempTableR.put(Right, newFile.getString(Right - 1));
+					 tempListR.add(Right);
 					 changedLines.add(Right);
 				 }
-				 newOnlyLists.add(tempList);
-				 newList.removeAll(tempList);
 				 
-			 }		 
+				 //check that if the hunk is a large modification
+				 if(isLargeModification(tempTableL.size(), oldFileLineNumber, tempTableR.size(), newFileLineNumber)) {
+					 oldOnlyLists.add(tempTableL);
+				 	 oldList.removeAll(tempListL);
+				 	 newOnlyLists.add(tempTableR);
+				 	 newList.removeAll(tempListR);
+				 }
+			 }		 	 
 
+			 //line mapping for unchanged lines
 			 int Left,Right;
 			 for(int index = 0; index < oldList.size() ; index++){
 				 Left = (int) oldList.toArray()[index];
@@ -271,21 +277,16 @@ public class LineHistory {
 				 //System.out.println(Left+","+Right);
 			     LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Left,Right);
 			     matcher.add(lp);
-				 
 			 }
 			 
-			 
-			    //for (int Line = 0;  Line < newFileLineNumber;Line++ ){
-			   // 	System.out.println(matcher.get(Line).getL() + "," + matcher.get(Line).getR()); 
-			    //} 
+			 //line mapping for changed lines in hunks
+			 //write something here!!
+			 lineMappingFOrChangedLines(oldOnlyLists, newOnlyLists);
 			  
 			    
-		    } catch (IOException e)
-		    {
-		      e.printStackTrace();
-		    }
-		    //System.out.println(out.toString());
-		    //System.out.println("-----------");
+		     } catch (IOException e) {
+		    	 e.printStackTrace();
+		     }
 		    out.reset();	
 	    }	    
 		//System.out.println("size of changedLines is " + changedLines.size());
@@ -294,6 +295,17 @@ public class LineHistory {
 	    for (int c = 0; c < changedLines.size(); c++) {
 	    	(resultLists.get(changedLines.get(c) - 1)).add(commitId.name());
 	    }
+	}
+	
+	private static void lineMappingFOrChangedLines(List<Hashtable<Integer, String>> oldOnlyLists, List<Hashtable<Integer, String>> newOnlyLists) {
+		
+		
+	}
+	
+	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
+		boolean isLargeModification = false;
+		
+		return isLargeModification;
 	}
 	
 	private static void updateResultTable() {
