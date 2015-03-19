@@ -391,7 +391,11 @@ public class LineHistory {
         return ((double) 1) / (1 + prevD[prevD.length - 1]);
         
         }
-	
+        
+	private int minOfThreeNumbers(int num1, int num2, int num3) {
+        return Math.min(num1, Math.min(num2, num3));
+        }
+    
 	private static void updateResultTable() {
 		for (int i = 1; i <= size; i++) {
 			List<String> tempList = resultLists.get(i - 1);
