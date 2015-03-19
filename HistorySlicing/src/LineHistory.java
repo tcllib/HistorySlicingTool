@@ -125,6 +125,8 @@ public class LineHistory {
 		int count = 0;
 		do {
 			ObjectId oldId = localRepo.resolve(newId.name() + "^");
+			System.out.println("newId is " + newId.name());
+			System.out.println("oldId is " + oldId.name());
 			
 			
 			//get target line numbers
@@ -135,14 +137,17 @@ public class LineHistory {
 			}
 			
 			// try to get the new and old file
-			//System.out.println("this is new file: ");
+			System.out.println("this is new file: ");
 			RawText newFile = getFile(localRepo, filePath, newId);
-			//System.out.println("-----------");
-			//System.out.println("this is old file: ");
+			System.out.println("-----------");
+			System.out.println("this is old file: ");
 			RawText oldFile = getFile(localRepo, filePath, oldId);
-			//System.out.println("---------");
+			System.out.println("---------");
 			
-			
+			//check if previous revision exist for oldFile
+			if(oldFile == null) {
+				break;
+			}
 			//get matched lines
 			ArrayList<LinePair<Integer, Integer>> newLineMappingList = lineMatch(newFile, oldFile, count, oldId, lineMappingList);
 			
@@ -174,6 +179,11 @@ public class LineHistory {
 			
 			//increment count
 			count ++;
+			for(LinePair<Integer, Integer> a: lineMappingList) {
+				System.out.println(a.getL() + ", " + a.getR());
+			}
+			System.out.println("-----------");
+			
 		} while(!isEnd);
 		
 		
@@ -181,6 +191,8 @@ public class LineHistory {
 			System.out.println("This is a new file");
 			
 		}
+		
+		System.out.println("count is " + count);
 		
 	}
 	
@@ -204,10 +216,7 @@ public class LineHistory {
 	  	        byte[] data = reader.open(treewalk.getObjectId(0)).getBytes();
 	  	        //return new String(data, "utf-8");
 	  	        file = new RawText(data);
-	  	        //System.out.println(new String(data, "utf-8"));
-	  	        
-	  	        //Initializing output list, set the output size to the line number of input file
-	  	        //output = new ArrayList<ObjectId> (file.size());
+	  	        System.out.println(new String(data, "utf-8"));
 	  	        
 	  	        //newText = new RawText(data);
 	  	    } else {
@@ -307,7 +316,7 @@ public class LineHistory {
 			 			 
 			 //line mapping for changed lines in hunks
 			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists);
-			 //System.out.println("size is changedMatcher is" + changedMatcher.size());
+			 System.out.println("size is changedMatcher is" + changedMatcher.size());
 			 
 			 //Combine the two matcher
 			 matcher.addAll(changedMatcher);
@@ -362,9 +371,11 @@ public class LineHistory {
 				
 				//calculate the Leven distance for each line in old hunk
 				for (int n = 0; n < oldList.size(); n++) {
+					//need to compute minimum!!!
 					LinePair<Integer,String> oldLine = oldList.get(n);
 					String oldString = oldLine.getR();
 					double distance = calculateNormalizedDistance(oldString, newString);
+					System.out.println("distance is " + distance);
 					
 					if(distance < 0.4) {
 						LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
