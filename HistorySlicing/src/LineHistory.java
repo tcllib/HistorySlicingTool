@@ -325,15 +325,11 @@ public class LineHistory {
 		return isLargeModification;
 	}
 	
-	protected Double calculateNormalizedDistance(String s1, String s2) {
+	private static Double calculateNormalizedDistance(String s1, String s2) {
         Double lDistance = 0.0;
-        int max = Math.max(s1.length(), s2.length());
-        if (max > 0) {
-                s1 = s1.toLowerCase();
-                s2 = s2.toLowerCase();
-                //int distance = Levenshtein.distance(s1, s2);
-                //lDistance = distance * 1.0 / max;
-        }
+   
+        //please finish this method here!
+        
         return lDistance;
 }
 	
