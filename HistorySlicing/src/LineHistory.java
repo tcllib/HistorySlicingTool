@@ -325,17 +325,72 @@ public class LineHistory {
 		return isLargeModification;
 	}
 	
-	protected Double calculateNormalizedDistance(String s1, String s2) {
-        Double lDistance = 0.0;
-        int max = Math.max(s1.length(), s2.length());
-        if (max > 0) {
-                s1 = s1.toLowerCase();
-                s2 = s2.toLowerCase();
-                //int distance = Levenshtein.distance(s1, s2);
-                //lDistance = distance * 1.0 / max;
+        private double LevenshteinDistance(String s1 , String s2) {
+        
+        // check preconditions
+        int m = s1.length();
+        int n = s2.length();
+        if (m == 0) {
+            return n; 			// some simple heuristics
+        } else if (n == 0) {
+            return m; 			// some simple heuristics
+        } else if (m > n) {
+            String tempString = s1; 	// swap m with n to get O(min(m, n)) space
+            s1 = s2;
+            s2 = tempString;
+            int tempInt = m;
+            m = n;
+            n = tempInt;
         }
-        return lDistance;
-}
+        
+        // normalize case
+        s1 = s1.toUpperCase();
+        s2 = s2.toUpperCase();
+        
+        // Instead of a 2d array of space O(m*n) such as int d[][] = new int[m +
+        // 1][n + 1], only the previous row and current row need to be stored at
+        // any one time in prevD[] and currD[]. This reduces the space
+        // complexity to O(min(m, n)).
+        int prevD[] = new int[n + 1];
+        int currD[] = new int[n + 1];
+        int temp[]; // temporary pointer for swapping
+        
+        // the distance of any second string to an empty first string
+        for (int j = 0; j < n + 1; j++) {
+            prevD[j] = j;
+        }
+        
+        // for each row in the distance matrix
+        for (int i = 0; i < m; i++) {
+            
+            // the distance of any first string to an empty second string
+            currD[0] = i + 1;
+            char ch1 = s1.charAt(i);
+            
+            // for each column in the distance matrix
+            for (int j = 1; j <= n; j++) {
+                
+                char ch2 = s2.charAt(j - 1);
+                if (ch1 == ch2) {
+                    currD[j] = prevD[j - 1];
+                } else {
+                    currD[j] = minOfThreeNumbers(prevD[j] + 1,
+                                                 currD[j - 1] + 1, prevD[j - 1] + 1);
+                }
+                
+            }
+            
+            temp = prevD;
+            prevD = currD;
+            currD = temp;
+            
+        }
+        
+        // after swapping, the final answer is now in the last column of prevD
+        
+        return ((double) 1) / (1 + prevD[prevD.length - 1]);
+        
+        }
 	
 	private static void updateResultTable() {
 		for (int i = 1; i <= size; i++) {
