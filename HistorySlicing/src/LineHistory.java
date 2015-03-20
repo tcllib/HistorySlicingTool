@@ -174,6 +174,7 @@ public class LineHistory {
 				
 				//If there is no match remove it
 				if(!isValid) {
+					System.out.println("------------removed-----------");
 					lineMappingList.remove(oldPair);
 				}
 			}
@@ -192,11 +193,11 @@ public class LineHistory {
 		
 		
 		if (count == 1) {
-			System.out.println("This is a new file");
+			System.out.println("This is a newly added file");
 			
 		}
 		
-		System.out.println("count is " + count);
+		//System.out.println("count is " + count);
 		
 	}
 	
@@ -310,10 +311,10 @@ public class LineHistory {
 				 
 				 newList.removeAll(unchangedTempListR);
 			 	 oldList.removeAll(unchangedTempListL);
-			 	 System.out.println("newList is ");
-			 	 System.out.println(newList);
-			 	 System.out.println("oldList is ");
-			 	 System.out.println(oldList);
+			 	 //System.out.println("newList is ");
+			 	 //System.out.println(newList);
+			 	 //System.out.println("oldList is ");
+			 	 //System.out.println(oldList);
 			 	 
 				 //check that if the hunk is a large modification
 				 if(!isLargeModification(changedTempListL.size(), oldFileLineNumber, changedTempListR.size(), newFileLineNumber)) {
@@ -321,27 +322,32 @@ public class LineHistory {
 				 	 newOnlyLists.add(changedTempListR);	 
 				 }
 				 
-				 System.out.println("changedTempL is ");
-				 for(LinePair<Integer, String> pair : changedTempListL) {
-					 System.out.println(pair.getL() + ", " + pair.getR());
-				 }
+				 //System.out.println("changedTempL is ");
+				 //for(LinePair<Integer, String> pair : changedTempListL) {
+				//	 System.out.println(pair.getL() + ", " + pair.getR());
+				 //}
 			 }		 	 
 			 
 
-			// System.out.println("newOnly list is ");
+			 //System.out.println("newOnly list is ");
 			 //printLists(newOnlyLists);
 			 //System.out.println("oldOnly list is ");
 			 //printLists(oldOnlyLists);
 
 			 //line mapping for unchanged lines
 			 matcher = lineMappingForUnchangedLines(oldList, newList);
-			 System.out.println("unchanged matcher is ");
-			 printMatcher(matcher);
+			 //System.out.println("unchanged matcher is ");
+			 //printMatcher(matcher);
 			 			 
 			 //line mapping for changed lines in hunks
 			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists);
 			 System.out.println("changed matcher is ");
-			 printMatcher(changedMatcher);
+			 
+			 for (LinePair<Integer,Integer> pair : changedMatcher) {
+					System.out.println(pair.getL() + ", " + pair.getR());
+				}
+			 System.out.println("--------------");
+			 //printMatcher(changedMatcher);
 			 //System.out.println("size is changedMatcher is" + changedMatcher.size());
 			 
 			 //Combine the two matcher
@@ -358,6 +364,12 @@ public class LineHistory {
 		//System.out.println("size of changedLines is " + changedLines.size());
 
 	    //update the resultLists
+System.out.println("changed matcher before is ");
+			 
+			 for (LinePair<Integer,Integer> pair : changedMatcher) {
+					System.out.println(pair.getL() + ", " + pair.getR());
+				}
+			 System.out.println("--------------");
 	    updateResultTable(changedMatcher, commitId, lineMappingList);
 	    
 	    return matcher;
@@ -506,14 +518,22 @@ public class LineHistory {
 	}
 	
 	private static void updateResultTable(ArrayList<LinePair<Integer, Integer>> changedMatcher, ObjectId commitId, List<LinePair<Integer, Integer>> lineMappingList) {
+		System.out.println("update changedMatcher is " );
 		for (LinePair<Integer, Integer> pair : changedMatcher) {
-			int targetLine = pair.getR();
+			System.out.println(pair.getL() + ", " + pair.getR());
+		}
+		
+		for (LinePair<Integer, Integer> pair : changedMatcher) {
+			int changedLine = pair.getR();
 			
 			for (LinePair<Integer, Integer> validPair : lineMappingList) {
 				//if exist update and end
-				
-				if(validPair.getL() == targetLine) {
-					resultTable.get(targetLine).add(commitId.name());
+				int targetLine = validPair.getL();
+				if(changedLine == targetLine) {
+					System.out.println("updated line number is: " + validPair.getR());
+					List<String> oldString = resultTable.get(validPair.getR());
+					oldString.add(commitId.name());
+					resultTable.put(validPair.getR(), oldString);
 					
 					break;
 				}
