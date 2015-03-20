@@ -46,7 +46,7 @@ public class LineHistory {
 	private static Hashtable<Integer, List<String>> resultTable;
 	
 	//this list is used to store the list of the changed commit ID for each line
-	private static List<List<String>> resultLists;
+	//private static List<List<String>> resultLists;
 	
 	//How many lines does the target file contain
 	private static int size;
@@ -92,14 +92,16 @@ public class LineHistory {
 		size = targetFile.size();
 		
 		resultTable = new Hashtable<Integer, List<String>> (size);
-		resultLists = new ArrayList<List<String>> (size);
+		//resultLists = new ArrayList<List<String>> (size);
 
+		//add current commit Id to the result
 		List<String> initList = new ArrayList<String> ();
+		initList.add(Id.name());
 		
 		//Initialize result table with line numbers and empty arrayLists
 		for (int i = 1; i <= size; i++) {
 			resultTable.put(i, initList);
-			resultLists.add(new ArrayList<String> ());
+			//resultLists.add(new ArrayList<String> ());
 		}
 	}
 	
@@ -124,9 +126,11 @@ public class LineHistory {
 		//which does not have a history
 		int count = 0;
 		do {
+				
 			ObjectId oldId = localRepo.resolve(newId.name() + "^");
+				
 			System.out.println("newId is " + newId.name());
-			System.out.println("oldId is " + oldId.name());
+			//System.out.println("oldId is " + oldId.name());
 			
 			
 			//get target line numbers
@@ -142,7 +146,7 @@ public class LineHistory {
 			System.out.println("-----------");
 			System.out.println("this is old file: ");
 			RawText oldFile = getFile(localRepo, filePath, oldId);
-			System.out.println("---------");
+		
 			
 			//check if previous revision exist for oldFile
 			if(oldFile == null) {
@@ -197,7 +201,7 @@ public class LineHistory {
 	}
 	
 	//this method try to find a file in the repo for a given commit
-	private static RawText getFile(Repository localRepo, String filePath, ObjectId commitId) throws MissingObjectException, IncorrectObjectTypeException, IOException {
+	private static RawText getFile(Repository localRepo, String filePath, ObjectId commitId) throws MissingObjectException, IncorrectObjectTypeException, IOException, NullPointerException {
 		RawText file = null;
 		ObjectReader reader = localRepo.newObjectReader();
 		
@@ -253,28 +257,30 @@ public class LineHistory {
 	    //System.out.println(matcher.get(maxLineN-1).getL());
 	    
 	    
-	    if (oldFile != null) {
-	    	int beginA[] = new int[200],beginB[] = new int[200];
-	    	int endA[] = new int[200],endB[] = new int[200];
-	    	try
-		    {    	
-	    	  int i = 0;
-		      EditList diffList = new EditList();
-		      diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
-		      new DiffFormatter(out).format(diffList, oldFile, newFile);
-			  for (Edit edit : diffList) {
-				  beginA[i] = edit.getBeginA(); 
-				  endA[i] = edit.getEndA();
-				  beginB[i] = edit.getBeginB();
-				  endB[i] = edit.getEndB();
-				  //System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);
-				  i++;			  
-			  }
+	    
+	    int beginA[] = new int[200],beginB[] = new int[200];
+	    int endA[] = new int[200],endB[] = new int[200];
+	    
+	    try {    	
+	    	 int i = 0;
+		     EditList diffList = new EditList();
+		     diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
+		     new DiffFormatter(out).format(diffList, oldFile, newFile);
+			 for (Edit edit : diffList) {
+				 beginA[i] = edit.getBeginA(); 
+				 endA[i] = edit.getEndA();
+				 beginB[i] = edit.getBeginB();
+				 endB[i] = edit.getEndB();
+				 //System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);
+				 i++;			  
+		 }
+			 
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
 			 ArrayList<Integer> oldList = new ArrayList<Integer> ();
 			 ArrayList<Integer> newList = new ArrayList<Integer> ();
 			 List<List<LinePair<Integer, String>>> oldOnlyLists = new ArrayList<List<LinePair<Integer, String>>> ();
 			 List<List<LinePair<Integer, String>>> newOnlyLists = new ArrayList<List<LinePair<Integer, String>>> ();
+			 
 			 
 			 for(int Left = 1; Left <= oldFileLineNumber; Left++ ){
 				 oldList.add(Left);
@@ -291,6 +297,7 @@ public class LineHistory {
 				 List<Integer> unchangedTempListR = new ArrayList<Integer>();
 
 				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
+					 //System.out.println("im in-------------------------");
 					 changedTempListL.add(new LinePair<Integer, String> (Left, oldFile.getString(Left - 1)));
 					 unchangedTempListL.add(Left);
 				 }
@@ -303,20 +310,39 @@ public class LineHistory {
 				 
 				 newList.removeAll(unchangedTempListR);
 			 	 oldList.removeAll(unchangedTempListL);
+			 	 System.out.println("newList is ");
+			 	 System.out.println(newList);
+			 	 System.out.println("oldList is ");
+			 	 System.out.println(oldList);
 			 	 
 				 //check that if the hunk is a large modification
 				 if(!isLargeModification(changedTempListL.size(), oldFileLineNumber, changedTempListR.size(), newFileLineNumber)) {
 					 oldOnlyLists.add(changedTempListL);
 				 	 newOnlyLists.add(changedTempListR);	 
 				 }
+				 
+				 System.out.println("changedTempL is ");
+				 for(LinePair<Integer, String> pair : changedTempListL) {
+					 System.out.println(pair.getL() + ", " + pair.getR());
+				 }
 			 }		 	 
+			 
+
+			// System.out.println("newOnly list is ");
+			 //printLists(newOnlyLists);
+			 //System.out.println("oldOnly list is ");
+			 //printLists(oldOnlyLists);
 
 			 //line mapping for unchanged lines
 			 matcher = lineMappingForUnchangedLines(oldList, newList);
+			 System.out.println("unchanged matcher is ");
+			 printMatcher(matcher);
 			 			 
 			 //line mapping for changed lines in hunks
 			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists);
-			 System.out.println("size is changedMatcher is" + changedMatcher.size());
+			 System.out.println("changed matcher is ");
+			 printMatcher(changedMatcher);
+			 //System.out.println("size is changedMatcher is" + changedMatcher.size());
 			 
 			 //Combine the two matcher
 			 matcher.addAll(changedMatcher);
@@ -329,7 +355,6 @@ public class LineHistory {
 		     }
 	    	
 		     out.reset();	
-	    }	    
 		//System.out.println("size of changedLines is " + changedLines.size());
 
 	    //update the resultLists
@@ -396,7 +421,8 @@ public class LineHistory {
 	}
 	
 	private static double calculateNormalizedDistance (String s1, String s2) {
-		return ((double) 1) / (1 + getDistance(s1, s2));
+		int max = Math.min(s1.length(), s2.length());
+		return (double) getDistance(s1, s2)/max;
 	}
 	
 	private static int getDistance(String s1, String s2) {
@@ -498,7 +524,8 @@ public class LineHistory {
 	}
 	
 	private static void printOutput() {
-		
+		System.out.println("------------------------");
+		System.out.println("Final output is: ");
 		for (int i = 1; i <= size; i++) {
 			List<String> tempList = resultTable.get(i);
 			int l = tempList.size();
@@ -509,6 +536,23 @@ public class LineHistory {
 			}
 			
 			System.out.println("Line " + i + ": " + commitList);
+		}
+	}
+	
+	//Used for test purpose only, maybe deleted later
+	private static void printMatcher(List<LinePair<Integer,Integer>> matcher) {
+		for (LinePair<Integer,Integer> pair : matcher) {
+			System.out.println(pair.getL() + ", " + pair.getR());
+		}
+		System.out.println("--------------");
+	}
+	
+	//Used for test purpose only, maybe deleted later
+	private static void printLists(List<List<LinePair<Integer, String>>> lists) {
+		for (List<LinePair<Integer, String>> list : lists) {
+			for (LinePair<Integer, String> l: list) {
+				System.out.println(l.getL());
+			}
 		}
 	}
 
