@@ -144,19 +144,15 @@ public class LineHistory {
 			
 			//if there is no previous revision, end the loop
 			if (oldId == null) {
-				
-				List<Integer> targetLines = new ArrayList<Integer>();
-
-				for (LinePair<Integer, Integer> pair: lineMappingList) {
-					targetLines.add(pair.getL());
+				for (int i = 1; i <= size; i++) {
+					String output = newId.name();
+					List<String> outputList = new ArrayList<String> ();
+					outputList.add(output);
+					resultTable.put(i, outputList);
 				}
-				
-				for (Integer target : targetLines) {
-					List<String> output = resultTable.get(target);
-					output.add(newId.abbreviate(8).name());
-					resultTable.put(target, output);
-				
-				}
+				System.out.println("this file is newly created");
+				printOutput();
+				System.exit(0);
 				
 				break;
 			}
@@ -171,19 +167,6 @@ public class LineHistory {
 			
 			//check if previous revision exist for oldFile
 			if(oldFile == null) {
-				List<Integer> targetLines = new ArrayList<Integer>();
-
-				for (LinePair<Integer, Integer> pair: lineMappingList) {
-					targetLines.add(pair.getL());
-				}
-				
-				for (Integer target : targetLines) {
-					List<String> output = resultTable.get(target);
-					output.add(newId.abbreviate(8).name());
-					resultTable.put(target, output);
-				
-				}
-				
 				break;
 			}
 			

@@ -71,9 +71,39 @@ public class LineHistory {
 				
 		//Initializing the Repository object
 		Repository localRepo = myGit.getRepository();
-						
+				
+				
+				
+				
+		//try to get the current commit Id and its previous one
+		ObjectId newId = localRepo.resolve(Constants.HEAD);
+		ObjectId oldId = localRepo.resolve(newId.name() + "^");
+		oldId = localRepo.resolve(oldId.name() + "^");
+		
+		//try to get the current file
+		RawText newFile = getFile(localRepo, filePath, newId);
+		RawText oldFile = getFile(localRepo, filePath, oldId);
+		int size = newFile.size();
+				
 		//Initializing the output table
 		InitOutput(localRepo, filePath);
+						
+		//check if old revision exist
+		if (oldId == null) {
+			//end here and update the result table
+			//System.out.println("immmmmmmmmmmm");
+			for (int i = 1; i <= size; i++) {
+				String output = newId.name();
+				List outputList = new ArrayList<String> ();
+				outputList.add(output);
+				resultTable.put(i, outputList);
+			}
+			System.out.println("this file is newly created");
+			printOutput();
+			System.exit(0);
+		}
+					
+		
 				
 		process(localRepo, filePath);
 								
@@ -144,20 +174,6 @@ public class LineHistory {
 			
 			//if there is no previous revision, end the loop
 			if (oldId == null) {
-				
-				List<Integer> targetLines = new ArrayList<Integer>();
-
-				for (LinePair<Integer, Integer> pair: lineMappingList) {
-					targetLines.add(pair.getL());
-				}
-				
-				for (Integer target : targetLines) {
-					List<String> output = resultTable.get(target);
-					output.add(newId.abbreviate(8).name());
-					resultTable.put(target, output);
-				
-				}
-				
 				break;
 			}
 			
@@ -171,19 +187,6 @@ public class LineHistory {
 			
 			//check if previous revision exist for oldFile
 			if(oldFile == null) {
-				List<Integer> targetLines = new ArrayList<Integer>();
-
-				for (LinePair<Integer, Integer> pair: lineMappingList) {
-					targetLines.add(pair.getL());
-				}
-				
-				for (Integer target : targetLines) {
-					List<String> output = resultTable.get(target);
-					output.add(newId.abbreviate(8).name());
-					resultTable.put(target, output);
-				
-				}
-				
 				break;
 			}
 			
