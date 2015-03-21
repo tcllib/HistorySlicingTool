@@ -519,12 +519,12 @@ public class LineHistory {
 		int beta = 4;
 	    int gamma = 4;
 		
-		//boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
-		//						lengthR > Math.max(alpha * file_lengthR, beta));
+		boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
+								lengthR > Math.max(alpha * file_lengthR, beta));
 		
-		//boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
+		boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
 		
-		//isLargeModification = regionLength || ratioOfLength;
+		isLargeModification = regionLength || ratioOfLength;
 		
 		
 		return isLargeModification;

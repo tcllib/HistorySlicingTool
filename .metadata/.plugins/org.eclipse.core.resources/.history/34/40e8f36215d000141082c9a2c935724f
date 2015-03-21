@@ -209,7 +209,7 @@ public class LineHistory {
 			//increment count
 			count ++;
 			
-		} while(true);
+		} while(!isEnd);
 		
 		
 		if (count == 1) {
@@ -515,17 +515,6 @@ public class LineHistory {
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
 		boolean isLargeModification = false;
-		double alpha = 0.1;
-		int beta = 4;
-	    int gamma = 4;
-		
-		//boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
-		//						lengthR > Math.max(alpha * file_lengthR, beta));
-		
-		//boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
-		
-		//isLargeModification = regionLength || ratioOfLength;
-		
 		
 		return isLargeModification;
 	}

@@ -137,6 +137,9 @@ public class LineHistory {
 		//initializing the current revision
 		ObjectId newId = localRepo.resolve(Constants.HEAD);
 		
+		//boolean value used to decide if there exists a previous revision, if not end the loop
+		boolean isEnd = false;
+		
 		RawText headFile = getFile(localRepo, filePath, newId);
 		int headSize = headFile.size();
 		
@@ -163,8 +166,7 @@ public class LineHistory {
 		do {
 				
 			ObjectId oldId = localRepo.resolve(newId.name() + "^");
-			//System.out.println("Oldest ID:"+oldestId.name() );W
-			
+			//System.out.println("Oldest ID:"+oldestId.name() );
 			boolean neartheEnd = false;
 			//get target line numbers
 			ObjectId oldestId = null;
@@ -177,7 +179,6 @@ public class LineHistory {
 			
 			try{
 			oldestId = localRepo.resolve(newId.name() + "^" + "^");
-			RawText oldestFile = getFile(localRepo, filePath, oldestId);
 
 			}catch (Exception e){
 				neartheEnd = true;
@@ -203,13 +204,14 @@ public class LineHistory {
 			lineMappingList = lineMatch(newFile, oldFile, count, neartheEnd, oldId, newId, lineMappingList);
 			//update the mapping list
 
+	
 			//move to the previous revision
 			newId = oldId;
 			
 			//increment count
 			count ++;
 			
-		} while(true);
+		} while(!isEnd);
 		
 		
 		if (count == 1) {
@@ -357,7 +359,7 @@ public class LineHistory {
 			 // Unchanged list confirmed, 2 change only
 			 //line mapping for changed lines in hunks
 					
-			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists);
+			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists);/****!!!*/
 			 
 			 
 			 System.out.println("Changed Matcher: ");
@@ -382,41 +384,33 @@ public class LineHistory {
 		    	 e.printStackTrace();
 		     }
 	    	
-		
+		     out.reset();
+
 			     for (int i = 0; i < lineMappingList.size(); i++) {
 					LinePair<Integer, Integer> oldPair = lineMappingList.get(i);
 					int targetLine = oldPair.getL();
-					System.out.println(oldPair.getL()+","+oldPair.getR());
 					boolean isValid = false;
-					if(targetLine != 0){
-					for (LinePair<Integer, Integer> newPair: matcher) {
 					
+					//Search if the target Line exists in the new list
+					//May change to hashtable later for efficient search if possible
+					for (LinePair<Integer, Integer> newPair: matcher) {
 						//If find a match modify it and stop the loop
-				
-						
-						if(newPair.getL()!=0){
-								if(newPair.getR() == targetLine) {
-									oldPair.setL(newPair.getL());
-									isValid = true;
-									break;
-								}
-							}
-							if(newPair.getL()==0){
-								if(newPair.getR() == targetLine) {
-									oldPair.setL(newPair.getL());
-									newPair.setR(oldPair.getR());
-									isValid = true;
-									break;
-								}
-							}
+						if(newPair.getR() == targetLine) {
+							oldPair.setL(newPair.getL());
+							isValid = true;
+							break;
 						}
 					}
 					
 					//If there is no match remove it
 					if(!isValid) {
+						System.out.println("*******************************");
+						System.out.println(oldPair.getL()+","+oldPair.getR());
+						lineMappingList.remove(oldPair);
 						System.out.println(lineMappingList.remove(oldPair));
-						i--;
+
 						//add it to the targetLines
+						targetLines.add(targetLine);
 					}
 				}
 			     
@@ -515,17 +509,6 @@ public class LineHistory {
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
 		boolean isLargeModification = false;
-		double alpha = 0.1;
-		int beta = 4;
-	    int gamma = 4;
-		
-		//boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
-		//						lengthR > Math.max(alpha * file_lengthR, beta));
-		
-		//boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
-		
-		//isLargeModification = regionLength || ratioOfLength;
-		
 		
 		return isLargeModification;
 	}

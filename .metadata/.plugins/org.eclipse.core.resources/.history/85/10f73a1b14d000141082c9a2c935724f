@@ -137,6 +137,9 @@ public class LineHistory {
 		//initializing the current revision
 		ObjectId newId = localRepo.resolve(Constants.HEAD);
 		
+		//boolean value used to decide if there exists a previous revision, if not end the loop
+		boolean isEnd = false;
+		
 		RawText headFile = getFile(localRepo, filePath, newId);
 		int headSize = headFile.size();
 		
@@ -177,7 +180,6 @@ public class LineHistory {
 			
 			try{
 			oldestId = localRepo.resolve(newId.name() + "^" + "^");
-			RawText oldestFile = getFile(localRepo, filePath, oldestId);
 
 			}catch (Exception e){
 				neartheEnd = true;
@@ -196,6 +198,19 @@ public class LineHistory {
 			
 			//check if previous revision exist for oldFile
 			if(oldFile == null) {
+				List<Integer> targetLines = new ArrayList<Integer>();
+
+				for (LinePair<Integer, Integer> pair: lineMappingList) {
+					targetLines.add(pair.getL());
+				}
+				
+				for (Integer target : targetLines) {
+					List<String> output = resultTable.get(target);
+					output.add(newId.abbreviate(8).name());
+					resultTable.put(target, output);
+				
+				}
+				
 				break;
 			}
 			//get matched lines
@@ -209,7 +224,7 @@ public class LineHistory {
 			//increment count
 			count ++;
 			
-		} while(true);
+		} while(!isEnd);
 		
 		
 		if (count == 1) {
@@ -515,17 +530,6 @@ public class LineHistory {
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
 		boolean isLargeModification = false;
-		double alpha = 0.1;
-		int beta = 4;
-	    int gamma = 4;
-		
-		//boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
-		//						lengthR > Math.max(alpha * file_lengthR, beta));
-		
-		//boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
-		
-		//isLargeModification = regionLength || ratioOfLength;
-		
 		
 		return isLargeModification;
 	}
