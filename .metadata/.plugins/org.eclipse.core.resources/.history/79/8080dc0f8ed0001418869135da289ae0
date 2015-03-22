@@ -479,45 +479,50 @@ public class LineHistory {
 			List<LinePair<Integer, String>> oldList = oldOnlyLists.get(i);
 			
 			//check large modification here
-			if( isLargeModification(oldList.size(), file_LengthL, newList.size(), file_LengthR)) {
+			if( !isLargeModification(oldList.size(), file_LengthL, newList.size(), file_LengthR)) {
 				for (LinePair<Integer, String> Line : newList) {
 					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,Line.getL());
 					matcher.add(addedLine);
 				}
-			} else {
-				int m = 0;
-				//loop for traversing each line in new hunk
-				for (int j = 0; j < newList.size(); j++) {
-					LinePair<Integer, String> newLine = newList.get(j);
-					String newString = newLine.getR();
-					boolean smallChanges = false;
-					//calculate the Leven distance for each line in old hunk
-					for (int n = m; n < oldList.size(); n++) {
-						//need to compute minimum!!!
-						LinePair<Integer,String> oldLine = oldList.get(n);
-						String oldString = oldLine.getR();
-						double distance = calculateNormalizedDistance(oldString, newString);
-						//System.out.println("distance is " + distance);
-						
-						if(distance < 0.4) {
-							LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
-							matcher.add(matchedLine);
-							m = n + 1;
-						    smallChanges = true;
-							break;
-						}
+			}
+				
+			
+			
+			
+			int m = 0;
+			//loop for traversing each line in new hunk
+			for (int j = 0; j < newList.size(); j++) {
+				LinePair<Integer, String> newLine = newList.get(j);
+				String newString = newLine.getR();
+				boolean smallChanges = false;
+				//calculate the Leven distance for each line in old hunk
+				for (int n = m; n < oldList.size(); n++) {
+					//need to compute minimum!!!
+					LinePair<Integer,String> oldLine = oldList.get(n);
+					String oldString = oldLine.getR();
+					double distance = calculateNormalizedDistance(oldString, newString);
+					//System.out.println("distance is " + distance);
+					
+					if(distance < 0.4) {
+						LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
+						matcher.add(matchedLine);
+						m = n + 1;
+					    smallChanges = true;
+						break;
+					}
 
-					}
-					
-					
-					if (smallChanges == false){
-						LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,newLine.getL());
-						matcher.add(addedLine);
-					}
-					
 				}
 				
-			}	
+				
+				if (smallChanges == false){
+					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,newLine.getL());
+					matcher.add(addedLine);
+				}
+				
+			}
+			
+		
+			
 		}
 		
 		return matcher;

@@ -333,9 +333,11 @@ public class LineHistory {
 				 newList.removeAll(unchangedTempListR);
 			 	 oldList.removeAll(unchangedTempListL);
 			 	 
-			 	 oldOnlyLists.add(changedTempListL);
-				 newOnlyLists.add(changedTempListR);	 
-				 
+				 //check that if the hunk is a large modification
+				 if(!isLargeModification(changedTempListL.size(), oldFileLineNumber, changedTempListR.size(), newFileLineNumber)) {
+					 oldOnlyLists.add(changedTempListL);
+				 	 newOnlyLists.add(changedTempListR);	 
+				 }
 			 }		 	 
 			 
 		
@@ -355,7 +357,7 @@ public class LineHistory {
 			 // Unchanged list confirmed, 2 change only
 			 //line mapping for changed lines in hunks
 					
-			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists, oldFileLineNumber, newFileLineNumber);
+			 changedMatcher = lineMappingForChangedLines(oldOnlyLists, newOnlyLists);
 			 
 			 
 			 System.out.println("Changed Matcher: ");
@@ -468,9 +470,7 @@ public class LineHistory {
 		return matcher;
 	}
 	
-	private static ArrayList<LinePair<Integer,Integer>> lineMappingForChangedLines(List<List<LinePair<Integer, String>>> oldOnlyLists, 
-																				   List<List<LinePair<Integer, String>>> newOnlyLists,
-																				   int file_LengthL, int file_LengthR) {
+	private static ArrayList<LinePair<Integer,Integer>> lineMappingForChangedLines(List<List<LinePair<Integer, String>>> oldOnlyLists, List<List<LinePair<Integer, String>>> newOnlyLists) {
 		ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
 		
 		//loop for traversing hunks
@@ -478,46 +478,36 @@ public class LineHistory {
 			List<LinePair<Integer, String>> newList = newOnlyLists.get(i);
 			List<LinePair<Integer, String>> oldList = oldOnlyLists.get(i);
 			
-			//check large modification here
-			if( isLargeModification(oldList.size(), file_LengthL, newList.size(), file_LengthR)) {
-				for (LinePair<Integer, String> Line : newList) {
-					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,Line.getL());
+			int m = 0;
+			//loop for traversing each line in new hunk
+			for (int j = 0; j < newList.size(); j++) {
+				LinePair<Integer, String> newLine = newList.get(j);
+				String newString = newLine.getR();
+				boolean smallChanges = false;
+				//calculate the Leven distance for each line in old hunk
+				for (int n = m; n < oldList.size(); n++) {
+					//need to compute minimum!!!
+					LinePair<Integer,String> oldLine = oldList.get(n);
+					String oldString = oldLine.getR();
+					double distance = calculateNormalizedDistance(oldString, newString);
+					//System.out.println("distance is " + distance);
+					
+					if(distance < 0.4) {
+						LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
+						matcher.add(matchedLine);
+						m = n + 1;
+					    smallChanges = true;
+						break;
+					}
+
+				}
+				if (smallChanges == false){
+					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,newLine.getL());
 					matcher.add(addedLine);
 				}
-			} else {
-				int m = 0;
-				//loop for traversing each line in new hunk
-				for (int j = 0; j < newList.size(); j++) {
-					LinePair<Integer, String> newLine = newList.get(j);
-					String newString = newLine.getR();
-					boolean smallChanges = false;
-					//calculate the Leven distance for each line in old hunk
-					for (int n = m; n < oldList.size(); n++) {
-						//need to compute minimum!!!
-						LinePair<Integer,String> oldLine = oldList.get(n);
-						String oldString = oldLine.getR();
-						double distance = calculateNormalizedDistance(oldString, newString);
-						//System.out.println("distance is " + distance);
-						
-						if(distance < 0.4) {
-							LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
-							matcher.add(matchedLine);
-							m = n + 1;
-						    smallChanges = true;
-							break;
-						}
-
-					}
-					
-					
-					if (smallChanges == false){
-						LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,newLine.getL());
-						matcher.add(addedLine);
-					}
-					
-				}
 				
-			}	
+			}
+			
 		}
 		
 		return matcher;
@@ -525,10 +515,10 @@ public class LineHistory {
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
 		boolean isLargeModification = false;
-		double alpha = 0.5;
+		double alpha = 0.1;
 		int beta = 4;
 	    int gamma = 4;
-	    //boolean regionLength = false;
+		
 		boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
 								lengthR > Math.max(alpha * file_lengthR, beta));
 		

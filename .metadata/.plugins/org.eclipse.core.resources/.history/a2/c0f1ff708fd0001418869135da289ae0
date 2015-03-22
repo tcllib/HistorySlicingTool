@@ -478,8 +478,8 @@ public class LineHistory {
 			List<LinePair<Integer, String>> newList = newOnlyLists.get(i);
 			List<LinePair<Integer, String>> oldList = oldOnlyLists.get(i);
 			
-			//check large modification here
-			if( isLargeModification(oldList.size(), file_LengthL, newList.size(), file_LengthR)) {
+			check large modification here
+			if( !isLargeModification(oldList.size(), file_LengthL, newList.size(), file_LengthR)) {
 				for (LinePair<Integer, String> Line : newList) {
 					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,Line.getL());
 					matcher.add(addedLine);
