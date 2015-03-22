@@ -88,12 +88,12 @@ public class LineHistory {
 		//Initializing the output table
 		InitOutput(localRepo, filePath);
 						
-		//check if old revision exist at the beginning
+		//check if old revision exist
 		if (oldId == null) {
 			//end here and update the result table
 			//System.out.println("immmmmmmmmmmm");
 			for (int i = 1; i <= size; i++) {
-				String output = newId.abbreviate(8).name();
+				String output = newId.name();
 				List<String> outputList = new ArrayList<String> ();
 				outputList.add(output);
 				resultTable.put(i, outputList);
@@ -111,7 +111,7 @@ public class LineHistory {
 			//end here and update the result table
 			//System.out.println("immmmmmmmmmmm");
 			for (int i = 1; i <= size; i++) {
-				String output = newId.abbreviate(8).name();
+				String output = newId.name();
 				List<String> outputList = new ArrayList<String> ();
 				outputList.add(output);
 				resultTable.put(i, outputList);
