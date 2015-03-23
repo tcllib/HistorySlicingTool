@@ -480,7 +480,7 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 					if(assignmentResult[a] != -1) {
 						newNewList.add(newList.get(a));
 						newOldList.add(oldList.get(assignmentResult[a]));
-						tempList.remove(newList.get(a));
+						tempList.remove(assignmentResult[a]);
 					}
 				}
 				

@@ -472,15 +472,11 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 				List<LinePair<Integer, String>> newNewList = new ArrayList<LinePair<Integer, String>>();
 				List<LinePair<Integer, String>> newOldList = new ArrayList<LinePair<Integer, String>>();
 				List<LinePair<Integer, String>> tempList = new ArrayList<LinePair<Integer, String>>();
-				for (LinePair<Integer, String> line : newList) {
-					tempList.add(line);
-				}
-				
 				for (int a = 0; a < assignmentResult.length; a++) {
 					if(assignmentResult[a] != -1) {
 						newNewList.add(newList.get(a));
 						newOldList.add(oldList.get(assignmentResult[a]));
-						tempList.remove(newList.get(a));
+						tempList.remove(assignmentResult[a]);
 					}
 				}
 				

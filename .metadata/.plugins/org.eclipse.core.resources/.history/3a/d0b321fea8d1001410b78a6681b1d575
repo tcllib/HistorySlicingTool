@@ -435,7 +435,7 @@ public class LineHistory {
 	private static ArrayList<LinePair<Integer,Integer>> lineMappingForChangedLines(List<List<LinePair<Integer, String>>> oldOnlyLists, 
 																				   List<List<LinePair<Integer, String>>> newOnlyLists,
 																				   int file_LengthL, int file_LengthR) {
-ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
+		ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,Integer>>();
 		
 		//loop for traversing hunks
 		for(int i = 0; i < oldOnlyLists.size(); i++) {
@@ -449,72 +449,6 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 					matcher.add(addedLine);
 				}
 			} else {
-				//Use HungrarianMethod to find the optimise matching
-				//construct costMatrix
-				double[][] costMatrix = new double [newList.size()][oldList.size()];
-				
-				for(int row = 0; row < newList.size(); row++) {
-					LinePair<Integer, String> newLine = newList.get(row);
-					String newString = newLine.getR();
-					
-					for (int col = 0; col < oldList.size(); col++) {
-						LinePair<Integer,String> oldLine = oldList.get(col);
-						String oldString = oldLine.getR();
-						double distance = calculateNormalizedDistance(oldString, newString);
-						costMatrix[row][col] = distance;
-					}
-				}
-				//Create  a Hungraianmethod Object
-				HungrarianMethod Hung = new HungrarianMethod(costMatrix);
-				int[] assignmentResult = Hung.execute();
-				
-				//construct new newList and oldList
-				List<LinePair<Integer, String>> newNewList = new ArrayList<LinePair<Integer, String>>();
-				List<LinePair<Integer, String>> newOldList = new ArrayList<LinePair<Integer, String>>();
-				List<LinePair<Integer, String>> tempList = new ArrayList<LinePair<Integer, String>>();
-				for (LinePair<Integer, String> line : newList) {
-					tempList.add(line);
-				}
-				
-				for (int a = 0; a < assignmentResult.length; a++) {
-					if(assignmentResult[a] != -1) {
-						newNewList.add(newList.get(a));
-						newOldList.add(oldList.get(assignmentResult[a]));
-						tempList.remove(newList.get(a));
-					}
-				}
-				
-				//what remain in oldList is the line that didnt find a match
-				//so add it to update the result table
-				for (LinePair<Integer, String> line: tempList) {
-					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,line.getL());
-					matcher.add(addedLine);
-				}
-				
-				
-				
-				
-				for(int a = 0; a < newNewList.size(); a++) {
-					LinePair<Integer, String> newLine = newNewList.get(a);
-					String newString = newLine.getR();
-					LinePair<Integer, String> oldLine = newOldList.get(a);
-					String oldString = oldLine.getR();					
-
-					//check if this is a small change
-					double distance = calculateNormalizedDistance(oldString, newString);
-					
-					if(distance < 0.4) {
-						LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
-						matcher.add(matchedLine);
-					} else {
-						//System.out.println("im innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
-						LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,newLine.getL());
-						matcher.add(addedLine);
-					}
-					
-				}
-				
-				/*
 				int m = 0;
 				//loop for traversing each line in new hunk
 				for (int j = 0; j < newList.size(); j++) {
@@ -546,12 +480,11 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 					}
 					
 				}
-				*/
-			}//end else
-			
+				
+			}	
 		}
 		
-		return matcher;	
+		return matcher;
 	}
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
