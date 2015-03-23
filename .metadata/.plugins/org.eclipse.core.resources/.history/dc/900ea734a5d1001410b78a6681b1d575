@@ -501,14 +501,14 @@ public class LineHistory {
 					if(assignmentResult[a] != -1) {
 						newNewList.add(newList.get(a));
 						newOldList.add(oldList.get(assignmentResult[a]));
-						newList.remove(assignmentResult[a]);
+						oldList.remove(assignmentResult[a]);
 					}
 				}
 				
 				//what remain in oldList is the line that didnt find a match
 				//so add it to update the result table
-				for (LinePair<Integer, String> line: newList) {
-					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,line.getL());
+				for (LinePair<Integer, String> Line: oldList) {
+					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,Line.getL());
 					matcher.add(addedLine);
 				}
 				
@@ -523,7 +523,7 @@ public class LineHistory {
 
 					//check if this is a small change
 					double distance = calculateNormalizedDistance(oldString, newString);
-					
+					System.out.
 					if(distance < 0.4) {
 						LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
 						matcher.add(matchedLine);

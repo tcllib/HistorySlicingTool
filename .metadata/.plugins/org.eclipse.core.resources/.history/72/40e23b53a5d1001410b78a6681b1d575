@@ -501,13 +501,13 @@ public class LineHistory {
 					if(assignmentResult[a] != -1) {
 						newNewList.add(newList.get(a));
 						newOldList.add(oldList.get(assignmentResult[a]));
-						newList.remove(assignmentResult[a]);
+						oldList.remove(assignmentResult[a]);
 					}
 				}
 				
 				//what remain in oldList is the line that didnt find a match
 				//so add it to update the result table
-				for (LinePair<Integer, String> line: newList) {
+				for (LinePair<Integer, String> line: oldList) {
 					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,line.getL());
 					matcher.add(addedLine);
 				}

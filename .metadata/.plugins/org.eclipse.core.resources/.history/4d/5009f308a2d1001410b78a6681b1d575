@@ -173,9 +173,12 @@ public class LineHistory {
 				
 			ObjectId oldId = localRepo.resolve(newId.name() + "^");
 			
-			boolean neartheEnd = false;
+			if(oldId == null) {
+				break;
+			}
+			//boolean neartheEnd = false;
 			//get target line numbers
-			ObjectId oldestId = null;
+			//ObjectId oldestId = null;
 			//if there is no previous revision, end the loop
 			// try to get the new and old file
 			RawText newFile = getFile(localRepo, filePath, newId);
@@ -501,19 +504,8 @@ public class LineHistory {
 					if(assignmentResult[a] != -1) {
 						newNewList.add(newList.get(a));
 						newOldList.add(oldList.get(assignmentResult[a]));
-						newList.remove(assignmentResult[a]);
 					}
 				}
-				
-				//what remain in oldList is the line that didnt find a match
-				//so add it to update the result table
-				for (LinePair<Integer, String> line: newList) {
-					LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,line.getL());
-					matcher.add(addedLine);
-				}
-				
-				
-				
 				
 				for(int a = 0; a < newNewList.size(); a++) {
 					LinePair<Integer, String> newLine = newNewList.get(a);
@@ -523,12 +515,10 @@ public class LineHistory {
 
 					//check if this is a small change
 					double distance = calculateNormalizedDistance(oldString, newString);
-					
 					if(distance < 0.4) {
 						LinePair<Integer, Integer> matchedLine = new LinePair<Integer, Integer> (oldLine.getL(), newLine.getL());
 						matcher.add(matchedLine);
 					} else {
-						//System.out.println("im innnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
 						LinePair<Integer, Integer> addedLine = new LinePair<Integer, Integer> (0 ,newLine.getL());
 						matcher.add(addedLine);
 					}
