@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;Hung.java&apos; to &apos;HungarianAlgorithm.java&apos;&#x0D;&#x0A;- Original project: &apos;HistorySlicing&apos;&#x0D;&#x0A;- Original element: &apos;Hung.java&apos;&#x0D;&#x0A;- Renamed element: &apos;HungarianAlgorithm.java&apos;" description="Rename compilation unit &apos;Hung.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;{Hung.java" name="HungarianAlgorithm.java" references="false" stamp="1427131798133" version="1.0"/>
+</session>

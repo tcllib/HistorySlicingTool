@@ -1,0 +1,70 @@
+import java.util.Arrays;
+import java.util.Scanner;
+
+public class HungrarianMethod {
+	
+	private final double[][] costMatrix;
+    private final int        rows, cols, dim;
+    private final double[]   labelByWorker, labelByJob;
+    private final int[]      minSlackWorkerByJob;
+    private final double[]   minSlackValueByJob;
+    private final int[]      matchJobByWorker, matchWorkerByJob;
+    private final int[]      parentWorkerByCommittedJob;
+    private final boolean[]  committedWorkers;
+    
+    public HungarianMethod(double[][] costMatrix)
+    {
+        this.dim = Math.max(costMatrix.length, costMatrix[0].length);
+        this.rows = costMatrix.length;
+        this.cols = costMatrix[0].length;
+        this.costMatrix = new double[this.dim][this.dim];
+        for (int w = 0; w < this.dim; w++)
+        {
+            if (w < costMatrix.length)
+            {
+                if (costMatrix[w].length != this.cols)
+                {
+                    throw new IllegalArgumentException("Irregular cost matrix");
+                }
+                this.costMatrix[w] = Arrays.copyOf(costMatrix[w], this.dim);
+            }
+            else
+            {
+                this.costMatrix[w] = new double[this.dim];
+            }
+        }
+        labelByWorker = new double[this.dim];
+        labelByJob = new double[this.dim];
+        minSlackWorkerByJob = new int[this.dim];
+        minSlackValueByJob = new double[this.dim];
+        committedWorkers = new boolean[this.dim];
+        parentWorkerByCommittedJob = new int[this.dim];
+        matchJobByWorker = new int[this.dim];
+        Arrays.fill(matchJobByWorker, -1);
+        matchWorkerByJob = new int[this.dim];
+        Arrays.fill(matchWorkerByJob, -1);
+    }
+    
+    public static void main(String[] args)
+    {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter the dimentsions of the cost matrix: ");
+        System.out.println("r:");
+        int r = sc.nextInt();
+        System.out.println("c:");
+        int c = sc.nextInt();
+        System.out.println("Enter the cost matrix: <row wise>");
+        double[][] cost = new double[r][c];
+        for (int i = 0; i < r; i++)
+        {
+            for (int j = 0; j < c; j++)
+            {
+                cost[i][j] = sc.nextDouble();
+            }
+        }
+        HungarianBipartiteMatching hbm = new HungarianBipartiteMatching(cost);
+        int[] result = hbm.execute();
+        System.out.println("Bipartite Matching: " + Arrays.toString(result));
+        sc.close();
+    }
+}
