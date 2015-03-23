@@ -8,7 +8,6 @@ INDEX VERSION 1.127+C:\Users\Jason\Documents\HistorySlicingTool\.metadata\.plugi
 3208426689.index
 1179815636.index
 642964287.index
-144967815.index
 3803567967.index
 3264989491.index
 4159432100.index
