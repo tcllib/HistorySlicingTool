@@ -1,5 +1,6 @@
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -179,6 +180,12 @@ public class LineHistory {
 			// try to get the new and old file
 			RawText newFile = getFile(localRepo, filePath, newId);
 			
+			if(newFile.isMissingNewlineAtEnd()) {
+				int size = newFile.size();
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				//newFile.writeLine(out, i);
+			}
+			
 			
 			RawText oldFile = getFile(localRepo, filePath, oldId);
 			
@@ -247,8 +254,20 @@ public class LineHistory {
 	  	    if (treewalk != null) {
 	  	    	// use the blob id to read the file's data
 	  	        byte[] data = reader.open(treewalk.getObjectId(0)).getBytes();
+	  	        int length = data.length;
+	  	        
+	  	        String text = Byte.toString(data[length - 1]);
+	  	        if(text.equals("\n")) {
+	  	        	byte[] newData = new byte[length + 1];
+	  	        	for (int i = 0; i < data.length; i++) {
+	  	        		newData[i] = data[i];
+	  	        	}
+	  	        	newData[newData.length - 1] = new Byte("\n");
+	  	        	file = new RawText(data);
+	  	        } else {
 	  	        //return new String(data, "utf-8");
-	  	        file = new RawText(data);
+	  	        	file = new RawText(data);
+	  	        }
 	  	        //System.out.println(new String(data, "utf-8"));
 	  	        
 	  	        //newText = new RawText(data);

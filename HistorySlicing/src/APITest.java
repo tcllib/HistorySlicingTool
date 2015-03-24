@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -43,8 +44,9 @@ public class APITest {
 		
 		//printBranch(localRepo);
 		//printBlame();
-		printDiff();
+		//printDiff();
 		//printRawDiff();
+		testRawtext();
 		
 	}
 	
@@ -114,7 +116,7 @@ public class APITest {
 	private static void printRawDiff() throws IOException, GitAPIException, MissingObjectException, IncorrectObjectTypeException,
     IOException {
 		
-		String localPath = "/home/tcllib/TestGitRepo"; //change this to your local repo path
+		String localPath = "C:\\Users\\Jason\\Desktop\\andy"; //change this to your local repo path
 		Repository  localRepo = setUpRepo(localPath);
 		
 		
@@ -205,5 +207,25 @@ public class APITest {
 	    System.out.println(out.toString());
 	    out.reset();
 	}
+	
+	private static void testRawtext() throws IOException {
+		//String localPath = "C:\\Users\\Jason\\Desktop\\andy"; //change this to your local repo path
+		//Repository  localRepo = setUpRepo(localPath);
+		RawText rt1 = new RawText(new File("C:\\Users\\Jason\\Desktop\\consulting case study\\new.txt"));
+		int size = rt1.size();
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		out.write('\n');
+		rt1.writeLine(out, size - 1);
+		
+		System.out.println(rt1.getString(size - 2));
+		System.out.println(rt1.getString(size - 1));
+		
+
+		
+		
+		
+	}
 
 }
+
