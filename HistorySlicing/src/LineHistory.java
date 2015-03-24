@@ -75,7 +75,7 @@ public class LineHistory {
 		//try to get the current commit Id and its previous one
 		ObjectId newId = localRepo.resolve(Constants.HEAD);
 		ObjectId oldId = localRepo.resolve(newId.name() + "^");
-		oldId = localRepo.resolve(oldId.name() + "^");
+		//oldId = localRepo.resolve(oldId.name() + "^");
 		
 		//try to get the current file
 		RawText newFile = getFile(localRepo, filePath, newId);
@@ -104,6 +104,7 @@ public class LineHistory {
 		//check if the oldFile exists at the beginning
 		if (oldFile == null) {
 			//end here and update the result table
+			System.out.println("immmmmmmmmmmm");
 			for (int i = 1; i <= size; i++) {
 				String output = newId.abbreviate(8).name();
 				List<String> outputList = new ArrayList<String> ();
@@ -190,6 +191,13 @@ public class LineHistory {
 						allMatcher.remove(Pair);//remove recent added lines
 					}
 				}
+				System.out.println("allMatcher is " );
+				for (LinePair<Integer, Integer> pair : allMatcher) {
+					//System.out.println(pair.getL() + ", " + pair.getR());
+					pair.setL(0);
+				} 
+				
+				
 				updateResultTable(allMatcher, oldId, newId, lineMappingList); 
 				break;
 			}
@@ -273,24 +281,32 @@ public class LineHistory {
 	    ArrayList<Integer> targetLines = new ArrayList<Integer>();
 	    
 	    //initial the array list with paired numbers/ check array list elements
-	      
-	    int beginA[] = new int[200],beginB[] = new int[200];
-	    int endA[] = new int[200],endB[] = new int[200];
+	    List<Integer> beginA = new ArrayList<Integer>();
+	    List<Integer> beginB = new ArrayList<Integer>();
+	    List<Integer> endA = new ArrayList<Integer>();
+	    List<Integer> endB = new ArrayList<Integer>();
+	    
+	    //int beginA[] = new int[200],beginB[] = new int[200];
+	    //int endA[] = new int[200],endB[] = new int[200];
 	    
 	    try {    	
-	    	 int i = 0;
 		     EditList diffList = new EditList();
 		     diffList.addAll(MyersDiff.INSTANCE.diff(RawTextComparator.DEFAULT,oldFile,newFile));
 		     new DiffFormatter(out).format(diffList, oldFile, newFile);
-		     //System.out.println(out);
-			 for (Edit edit : diffList) {
-				 beginA[i] = edit.getBeginA(); 
-				 endA[i] = edit.getEndA();
-				 beginB[i] = edit.getBeginB();
-				 endB[i] = edit.getEndB();
-				 //System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);
-				 i++;			  
-		 }
+		     System.out.println(out);
+		     int i = 0;
+			 for ( ; i < diffList.size(); i++) {
+				 Edit edit = diffList.get(i);
+				 
+				 beginA.add(edit.getBeginA()); 
+				 endA.add(edit.getEndA());
+				 beginB.add(edit.getBeginB());
+				 endB.add(edit.getEndB());
+				 
+				 
+				 
+				 //System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);			  
+			 }
 			 
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
 			 ArrayList<Integer> oldList = new ArrayList<Integer> ();
@@ -307,19 +323,19 @@ public class LineHistory {
 				 newList.add(Right);
 			 }	
 			 
-			 for (int j = 0; j< i ; j++){
+			 for (int j = 0; j< beginA.size() ; j++){
 				 List<LinePair<Integer, String>> changedTempListL = new ArrayList<LinePair<Integer, String>>();
 				 List<LinePair<Integer, String>> changedTempListR = new ArrayList<LinePair<Integer, String>>();
 				 List<Integer> unchangedTempListL = new ArrayList<Integer>();
 				 List<Integer> unchangedTempListR = new ArrayList<Integer>();
 
-				 for (int Left = beginA[j]+1; Left<=endA[j]; Left++){
+				 for (int Left = beginA.get(j)+1; Left<=endA.get(j); Left++){
 					 //System.out.println("im in-------------------------");
 					 changedTempListL.add(new LinePair<Integer, String> (Left, oldFile.getString(Left - 1)));
 					 unchangedTempListL.add(Left);
 				 }
 				 
-				 for (int Right = beginB[j]+1; Right<=endB[j]; Right++){
+				 for (int Right = beginB.get(j)+1; Right<=endB.get(j); Right++){
 					 changedTempListR.add(new LinePair<Integer, String> (Right, newFile.getString(Right - 1)));
 					 unchangedTempListR.add(Right);
 					 changedLines.add(Right);
@@ -423,8 +439,10 @@ public class LineHistory {
 
 		int Left,Right;
 		 for(int index = 0; index < oldList.size() ; index++){
-			 Left = (int) oldList.toArray()[index];
-			 Right = (int) newList.toArray()[index];
+			 //Left = (int) oldList.toArray()[index];
+			 //Right = (int) newList.toArray()[index];
+			 Left = oldList.get(index);
+			 Right = newList.get(index);
 		     LinePair<Integer,Integer> lp = new LinePair<Integer,Integer>(Left,Right);
 		     matcher.add(lp);
 		 }
@@ -441,6 +459,10 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 		for(int i = 0; i < oldOnlyLists.size(); i++) {
 			List<LinePair<Integer, String>> newList = newOnlyLists.get(i);
 			List<LinePair<Integer, String>> oldList = oldOnlyLists.get(i);
+			
+			if(newList.size() == 0) {
+				break;
+			}
 			
 			//check large modification here
 			if( isLargeModification(oldList.size(), file_LengthL, newList.size(), file_LengthR)) {
@@ -556,17 +578,20 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 	
 	private static boolean isLargeModification(int lengthL, int file_lengthL, int lengthR, int file_lengthR) {
 		boolean isLargeModification = false;
-		double alpha = 0.5;
-		int beta = 4;
-	    int gamma = 4;
-	    //boolean regionLength = false;
-		boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
-								lengthR > Math.max(alpha * file_lengthR, beta));
-		
-		boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
-		
-		isLargeModification = regionLength || ratioOfLength;
-		
+		if(lengthR != 0) {
+
+	    	
+	    	double alpha = 0.5;
+	    	int beta = 4;
+	    	int gamma = 4;
+	    	//boolean regionLength = false;
+	    	boolean regionLength = (lengthL > Math.max(alpha * file_lengthL, beta) || 
+	    							lengthR > Math.max(alpha * file_lengthR, beta));
+
+	    	boolean ratioOfLength = (lengthL/lengthR < 1/gamma || gamma < lengthL/lengthR);
+	    
+	    	isLargeModification = regionLength || ratioOfLength;
+		}
 		
 		return isLargeModification;
 	}
@@ -658,7 +683,9 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 	
 	private static void updateResultTable(ArrayList<LinePair<Integer, Integer>> changedMatcher, ObjectId oldId, ObjectId newId, List<LinePair<Integer, Integer>> lineMappingList) {
 		//add oldId for changed lines
+		System.out.println("changedMatcher is ");
 		for (LinePair<Integer, Integer> pair : changedMatcher) {
+			System.out.println(pair.getL() + ", " + pair.getR());
 			int targetLine = pair.getL();
 			
 			if (targetLine != 0){
