@@ -183,7 +183,6 @@ public class LineHistory {
 			RawText oldFile = getFile(localRepo, filePath, oldId);
 			
 			if(oldFile == null) {
-				//System.out.println("im inniinini");
 			    ArrayList<LinePair<Integer,Integer>> allMatcher = new ArrayList<LinePair<Integer,Integer>>();
 
 				allMatcher.addAll(lineMappingList);
@@ -193,10 +192,10 @@ public class LineHistory {
 					}
 				}
 				//System.out.println("allMatcher is " );
-				for (LinePair<Integer, Integer> pair : allMatcher) {
+				//for (LinePair<Integer, Integer> pair : allMatcher) {
 					//System.out.println(pair.getL() + ", " + pair.getR());
-					pair.setL(0);
-				} 
+				//	pair.setL(0);
+				//} 
 				
 				
 				updateResultTable(allMatcher, oldId, newId, lineMappingList); 
@@ -380,8 +379,8 @@ public class LineHistory {
 			 
 			 
 			 
-			 //System.out.println("Final Matcher: ");
-			 //printMatcher(matcher);
+			 System.out.println("Final Matcher: ");
+			 printMatcher(matcher);
 			 //remove unneeded lines
 			 
 			 
@@ -392,7 +391,7 @@ public class LineHistory {
 			     for (int i = 0; i < lineMappingList.size(); i++) {
 					LinePair<Integer, Integer> oldPair = lineMappingList.get(i);
 					int targetLine = oldPair.getL();
-					//System.out.println(oldPair.getL()+","+oldPair.getR());
+					System.out.println(oldPair.getL()+","+oldPair.getR());
 					boolean isValid = false;
 					if(targetLine != 0){
 					for (LinePair<Integer, Integer> newPair: matcher) {
@@ -685,16 +684,16 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 	
 	private static void updateResultTable(ArrayList<LinePair<Integer, Integer>> changedMatcher, ObjectId oldId, ObjectId newId, List<LinePair<Integer, Integer>> lineMappingList) {
 		//add oldId for changed lines
-		//System.out.println("changedMatcher is ");
+		System.out.println("changedMatcher is ");
 		for (LinePair<Integer, Integer> pair : changedMatcher) {
-			//System.out.println(pair.getL() + ", " + pair.getR());
+			System.out.println(pair.getL() + ", " + pair.getR());
 			int targetLine = pair.getL();
 			
 			if (targetLine != 0){
 				for (LinePair<Integer, Integer> validPair : lineMappingList) {
 					//if exist update and end
 					if(validPair.getL() == targetLine ) {
-						//System.out.println("New Version Added: "+ targetLine+","+validPair.getR()+" "+newId.abbreviate(9).name());
+						System.out.println("New Version Added: "+ targetLine+","+validPair.getR()+" "+newId.abbreviate(9).name());
 						List<String> SHA = new ArrayList<String>(resultTable.get(validPair.getR()));
 						SHA.add(newId.abbreviate(9).name()+"(Line:"+ validPair.getL()+")");
 						resultTable.put(validPair.getR(),SHA);
@@ -705,7 +704,7 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 				for (LinePair<Integer, Integer> validPair : lineMappingList) {
 					//if exist update and end
 					if(validPair.getL() == targetLine && validPair.getR() == pair.getR() ) {
-						//System.out.println("New Version Added: "+ targetLine+","+validPair.getR()+" "+newId.abbreviate(9).name());
+						System.out.println("New Version Added: "+ targetLine+","+validPair.getR()+" "+newId.abbreviate(9).name());
 						List<String> SHA = new ArrayList<String>(resultTable.get(validPair.getR()));
 						SHA.add(newId.abbreviate(9).name()+"(Line added)");
 						resultTable.put(validPair.getR(),SHA);
@@ -731,6 +730,23 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 			}
 			
 			System.out.println("Line " + i + ": " + commitList);
+		}
+	}
+	
+	//Used for test purpose only, maybe deleted later
+	private static void printMatcher(List<LinePair<Integer,Integer>> matcher) {
+		for (LinePair<Integer,Integer> pair : matcher) {
+			System.out.println(pair.getL() + "," + pair.getR());
+		}
+		System.out.println("--------------");
+	}
+	
+	//Used for test purpose only, maybe deleted later
+	private static void printLists(List<List<LinePair<Integer, String>>> lists) {
+		for (List<LinePair<Integer, String>> list : lists) {
+			for (LinePair<Integer, String> l: list) {
+				System.out.println(l.getL());
+			}
 		}
 	}
 

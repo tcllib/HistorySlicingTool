@@ -183,7 +183,6 @@ public class LineHistory {
 			RawText oldFile = getFile(localRepo, filePath, oldId);
 			
 			if(oldFile == null) {
-				//System.out.println("im inniinini");
 			    ArrayList<LinePair<Integer,Integer>> allMatcher = new ArrayList<LinePair<Integer,Integer>>();
 
 				allMatcher.addAll(lineMappingList);
@@ -193,10 +192,10 @@ public class LineHistory {
 					}
 				}
 				//System.out.println("allMatcher is " );
-				for (LinePair<Integer, Integer> pair : allMatcher) {
+				//for (LinePair<Integer, Integer> pair : allMatcher) {
 					//System.out.println(pair.getL() + ", " + pair.getR());
-					pair.setL(0);
-				} 
+				//	pair.setL(0);
+				//} 
 				
 				
 				updateResultTable(allMatcher, oldId, newId, lineMappingList); 
