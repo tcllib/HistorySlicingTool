@@ -326,7 +326,7 @@ public class LineHistory {
 				 
 				 
 				 
-				 //System.out.println("BeginA: "+beginA[i]+" EndA: "+endA[i]+" BeginB: "+beginB[i]+" EndB: "+endB[i]);			  
+				 //System.out.println("BeginA: "+beginA.get(i)+" EndA: "+endA.get(i)+" BeginB: "+beginB.get(i)+" EndB: "+endB.get(i));			  
 			 }
 			 
 			 //System.out.println(lineA.toString()+lineB.toString()+lenA.toString()+lenB.toString());
@@ -504,10 +504,15 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 						LinePair<Integer,String> oldLine = oldList.get(col);
 						String oldString = oldLine.getR();
 						double distance = calculateNormalizedDistance(oldString, newString);
+						//System.out.println(distance);
 						costMatrix[row][col] = distance;
 					}
 				}
 				//Create  a Hungraianmethod Object
+				//System.out.println("this is the matrix");
+				//for(int x = 0; x < oldList.size(); x++) {
+				//	System.out.println(costMatrix[0][x]);
+				//}
 				HungrarianMethod Hung = new HungrarianMethod(costMatrix);
 				int[] assignmentResult = Hung.execute();
 				
@@ -618,7 +623,8 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 	}
 	
 	private static double calculateNormalizedDistance (String s1, String s2) {
-		int max = Math.min(s1.length(), s2.length());
+		int max = Math.max(s1.length(), s2.length());
+		//System.out.println("string is: " + s1 + ", " + s2);
 		return (double) getDistance(s1, s2)/max;
 	}
 	
@@ -754,19 +760,3 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
