@@ -68,8 +68,7 @@ public class LineHistory {
 			myGit = Git.open(gitWorkDir);
 		}
 		catch (IOException e) {
-			System.out.println("Invalid repository directory, please see usage below for detail");
-			printUsage();
+			System.out.println("Invalid directory");
 			System.exit(0);
 		}
 				
@@ -775,7 +774,7 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 		System.out.println("Usage: ");
 		System.out.println("No input or wrong inpurt is detected.");
 		System.out.println("Please take the directory of your GIT local repository as the first intput");
-		System.out.println("And please take the path of the interested file as the second input.");
+		System.out.println("And please take the path of the file you want to know about.");
 		System.out.println("Notice: the file path should be the relative directory to the repository path.");
 		System.out.println("For example, if there is no sub-directory in your local repository file, the second input should be the name of the text file");
 	}

@@ -53,10 +53,7 @@ public class LineHistory {
 	public static void main(String[] args) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException, GitAPIException {
 		// TODO Auto-generated method stub
 		//Validate arguments
-		if (args.length != 2) {
-			printUsage();
-			System.exit(0);
-		}
+		if (args.length < 2)
 		
 		//Initializing Git working directory
 		File gitWorkDir = new File(args[0]);
@@ -68,8 +65,7 @@ public class LineHistory {
 			myGit = Git.open(gitWorkDir);
 		}
 		catch (IOException e) {
-			System.out.println("Invalid repository directory, please see usage below for detail");
-			printUsage();
+			System.out.println("Invalid directory");
 			System.exit(0);
 		}
 				
@@ -86,12 +82,6 @@ public class LineHistory {
 		
 		//try to get the current file
 		RawText newFile = getFile(localRepo, filePath, newId);
-		if(newFile == null) {
-			System.out.println("Invalid file path, please see usage below for detail.");
-			printUsage();
-			System.exit(0);
-		}
-		
 		int size = newFile.size();
 				
 		//Initializing the output table
@@ -769,15 +759,6 @@ ArrayList<LinePair<Integer,Integer>> matcher = new ArrayList<LinePair<Integer,In
 			
 			System.out.println("Line " + i + ": " + commitList);
 		}
-	}
-	
-	private static void printUsage() {
-		System.out.println("Usage: ");
-		System.out.println("No input or wrong inpurt is detected.");
-		System.out.println("Please take the directory of your GIT local repository as the first intput");
-		System.out.println("And please take the path of the interested file as the second input.");
-		System.out.println("Notice: the file path should be the relative directory to the repository path.");
-		System.out.println("For example, if there is no sub-directory in your local repository file, the second input should be the name of the text file");
 	}
 
 }

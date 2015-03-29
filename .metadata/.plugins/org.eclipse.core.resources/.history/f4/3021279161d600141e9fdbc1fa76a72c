@@ -53,13 +53,15 @@ public class LineHistory {
 	public static void main(String[] args) throws RevisionSyntaxException, AmbiguousObjectException, IncorrectObjectTypeException, IOException, GitAPIException {
 		// TODO Auto-generated method stub
 		//Validate arguments
+	
+		
+		//Initializing Git working directory
+		File gitWorkDir = new File(args[0]);
+		
 		if (args.length != 2) {
 			printUsage();
 			System.exit(0);
 		}
-		
-		//Initializing Git working directory
-		File gitWorkDir = new File(args[0]);
 				
 		//Initializing input file path
 		String filePath = args[1];
